@@ -21,61 +21,73 @@ MOV R1,#16D			;Set R1 -> 16D ->10H
 SETB P3.5			;Set DHT11 Data Port
 CLR P3.5			;CLR DHT11 Data Port
 ;ACALL DELAY1			;Delay
-SETB P3.5
-HERE:JB P3.5,HERE
-HERE1:JNB P3.5,HERE1
-HERE2:JB P3.5,HERE2
-LOOP:JNB P3.5,LOOP
-     RL A
-     MOV R0,A
-     SETB TR1
-HERE4:JB P3.5,HERE4
-      CLR TR1
-      MOV A,TL1
-      SUBB A,#50D
-      MOV A,R0
-      JB PSW.7, NEXT
-      SETB ACC.0
-      SJMP ESC
-NEXT:CLR ACC.0
-ESC: MOV TL1,#00D
-     CLR PSW.7
-     DJNZ R1,LOOP
-     ACALL LCD_INIT
-     ACALL WELCOME
-     ACALL LINE2
-     ACALL TEXT2
-     ACALL HMDTY
-     ACALL CHECK
-     ACALL DELAY2
-     LJMP MAIN
+SETB P3.5			;Set DHT11 Data Port
+WAIT1:JB P3.5,$			;Wait till Data Port LOW
+WAIT2:JNB P3.5,$		;Wait till Data Port HIGH
+WAIT3:JB P3.5,$			;Wait till Data Port LOW
+
+DATALOOP:		;DHT11 Data Colection LOOP
+JNB P3.5,DATALOOP		;Wait till Data Port HIGH
+RL A				;Rotate ACC Left
+MOV R0,A			;Move ACC to Register 0
+SETB TR1			;SET Timer 1 RUN
+WAIT4:
+JB P3.5,$			;Wait till Data Port LOW
+CLR TR1				;Stop Timer 1
+MOV A,TL1			;Move Timer 1 Low to ACC
+SUBB A,#50D			;ACC - 50D[00110010b] If carry is set, bit is low
+MOV A,R0			;Move Register 0 to ACC
+JB PSW.7, NEXT			;Jump to Next if Carry High
+SETB ACC.0			;Set ACC.0 to 1
+SJMP DISP			;Jump to DISP
+
+NEXT:
+CLR ACC.0			;Clear ACC Bit 0
+
+DISP:
+MOV TL1,#00D			;Set Timer 1 Low -> 0H
+CLR PSW.7			;Clear carry flag
+DJNZ R1,DATALOOP		;Decrement R1, and Jump to DATALOOP if not zero
+
+ACALL LINE2
+ACALL TEXT2
+ACALL HMDTY
+ACALL CHECK
+ACALL DELAY2
+LJMP MAIN
 
 
-DELAY1:
-MOV TH0,#0B9H
-MOV TL0,#0B0H
-SETB TR0
-HERE5: JNB TF0,HERE5
-       CLR TR0
-       CLR TF0
-       RET 
+DELAY1:			;18ms Delay
+MOV TH0,#0B9H			;Time high set -> 185D
+MOV TL0,#0B0H			;Time low set -> 176D
+SETB TR0			;Timer RUN
+JNB TF0,$			;Stay Here till TF0 set
+CLR TR0				;Clear Timer RUN
+CLR TF0				;Clear Timer Overflow
+RET
 
-DELAY2:MOV R1,#112D
-  BACK:ACALL DELAY1
-       DJNZ R1,BACK
-       RET
- 
- CHECK:MOV A,R0
-       MOV B,#65D
-       SUBB A,B
-       JB PSW.7,NEXT1
-       ACALL TEXT3
-       SETB P2.0
-       SJMP ESC1
-  NEXT1:ACALL TEXT4
-        CLR P2.0
-  ESC1:CLR PSW.7
-       RET
+DELAY2:
+;MOV R1,#112D
+;BACK:
+;ACALL DELAY1
+;DJNZ R1,BACK
+RET
+
+CHECK:
+MOV A,R0
+MOV B,#65D
+SUBB A,B
+JB PSW.7,NEXT1
+ACALL TEXT3
+SETB P2.0
+SJMP DISP1
+
+NEXT1:
+ACALL TEXT4
+CLR P2.0
+
+DISP1:CLR PSW.7
+RET
 
  CMD: MOV P0,A
     CLR RS
@@ -199,8 +211,9 @@ CLR E				;Clear Enable
 CLR RW				;Clear R/W
 RET
 
-ASCII: MOVC A,@A+DPTR
-       RET
+ASCII:
+MOVC A,@A+DPTR
+RET
 ENDP:
 SJMP ENDP
 
