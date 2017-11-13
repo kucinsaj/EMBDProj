@@ -168,15 +168,14 @@ TEXT2: MOV A,#'R'
     ACALL CMD
     MOV A,#6H
     ACALL CMD
-    MOV A,#80H 
+    MOV A,#80H
     ACALL CMD
     RET
-    
+
 LINE2:MOV A,#0C0H 
       ACALL CMD
       RET
-          
-          
+
 DELAY: CLR E
     CLR RS
     SETB RW
