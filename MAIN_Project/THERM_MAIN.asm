@@ -1,8 +1,8 @@
-;;;;;;Init Variables;;;;;;
+;;;;;;Assign Port Names;;;;;;
 RS EQU P2.7
 RW EQU P2.6
 E  EQU P2.5
-;;;;;;Allocate Memory;;;;;;
+;;;;;;Init Variables;;;;;;
 TEMP EQU 48H
 HUM  EQU 49H
 ORG 000H
@@ -13,14 +13,14 @@ SETB P3.5			;Set DHT11 Data Port
 CLR P2.0			;Clear Output*
 MOV TMOD,#00100001B		;Set TMOD
 MOV TL1,#00D			;Set Timer Low Byte
-ACALL LCD_INIT			;Call LCD Init subroutine
-ACALL WELCOME			;Call Welcome Text
+LCALL LCD_INIT			;Call LCD Init subroutine
+LCALL WELCOME			;Call Welcome Text
 
 MAIN:			;Main Routine
 MOV R1,#8D			;Set R1 -> 8D ->08H
 SETB P3.5			;Set DHT11 Data Port
 CLR P3.5			;Clear DHT11 Data Port
-;ACALL DELAY1			;Delay
+;LCALL DELAY1			;Delay
 SETB P3.5			;Set DHT11 Data Port
 WAIT1:JB P3.5,$			;Wait till Data Port LOW
 WAIT2:JNB P3.5,$		;Wait till Data Port HIGH
@@ -63,11 +63,11 @@ CLR PSW.F0			;Clear Directing bit   0 = HUM   1 = TEMP
 CLR R7.0			;Clear Decimal Skip bit
 
 DIAGNOSTIC_DISPLAY:	;Displays Full Diagnostic screen with updating values
-ACALL LINE2
-ACALL TEXT2
-ACALL HMDTY
-ACALL CHECK
-ACALL DELAY2
+LCALL LINE2
+LCALL TEXT2
+LCALL HMDTY
+LCALL CHECK
+LCALL DELAY2
 LJMP MAIN
 
 
@@ -83,7 +83,7 @@ RET
 DELAY2:
 ;MOV R1,#112D
 ;BACK:
-;ACALL DELAY1
+;LCALL DELAY1
 ;DJNZ R1,BACK
 RET
 
@@ -92,12 +92,12 @@ MOV A,R0
 MOV B,#65D
 SUBB A,B
 JB PSW.7,NEXT1
-ACALL TEXT3
+LCALL TEXT3
 SETB P2.0
 SJMP DISP1
 
 NEXT1:
-ACALL TEXT4
+LCALL TEXT4
 CLR P2.0
 
 DISP1:CLR PSW.7
@@ -108,18 +108,18 @@ RET
     CLR RW
     SETB E
     CLR E
-    ;ACALL DELAY
+    ;LCALL DELAY
     RET
 
 WRITE:
 
 MOV P0,A
-    SETB RS
-    CLR RW
-    SETB E
-    CLR E
-   ; ACALL DELAY
-    RET
+SETB RS
+CLR RW
+SETB E
+CLR E
+;LCALL DELAY
+RET
 
 HMDTY:			;Assembles Humidity reading percentage
 MOV A,HUM			;Store HUM Value in ACC
@@ -128,86 +128,106 @@ DIV AB				;Divide ACC by B ACC
 MOV R3,B			;Store remainder in register 3
 MOV B,#10D			;Store 10D in B ACC
 DIV AB				;Divide ACC by B ACC
-ACALL ASCII			;Convert to ASCII
-ACALL WRITE			;Write to Display
+LCALL ASCII			;Convert to ASCII
+LCALL WRITE			;Write to Display
 MOV A,B				;Store remainder in ACC
-ACALL ASCII			;Convert to ASCII
-ACALL WRITE			;Write to Display
+LCALL ASCII			;Convert to ASCII
+LCALL WRITE			;Write to Display
 MOV A,R3			;Store register 3 in ACC
-ACALL ASCII			;Convert to ASCII
-ACALL WRITE			;Write to Display
+LCALL ASCII			;Convert to ASCII
+LCALL WRITE			;Write to Display
 MOV A,#'%'			;Store Percent symbol in ACC
-ACALL WRITE			;Write to Display
+LCALL WRITE			;Write to Display
 RET
 
+HMDTY:			;Assembles Temperature reading
+MOV A,HUM			;Store HUM Value in ACC
+MOV B,#10D			;Store 10D in B ACC
+DIV AB				;Divide ACC by B ACC
+MOV R3,B			;Store remainder in register 3
+MOV B,#10D			;Store 10D in B ACC
+DIV AB				;Divide ACC by B ACC
+LCALL ASCII			;Convert to ASCII
+LCALL WRITE			;Write to Display
+MOV A,B				;Store remainder in ACC
+LCALL ASCII			;Convert to ASCII
+LCALL WRITE			;Write to Display
+MOV A,R3			;Store register 3 in ACC
+LCALL ASCII			;Convert to ASCII
+LCALL WRITE			;Write to Display
+MOV A,#11011111b		;Store Degree symbol in ACC
+LCALL WRITE			;Write to Display
+MOV A,#'C'			;Store 'C' in ACC
+LCALL WRITE
+RET
 
 WELCOME:
 MOV A,#' '
-ACALL WRITE
+LCALL WRITE
 MOV A,#' '
-ACALL WRITE
+LCALL WRITE
 MOV A,#' '
-ACALL WRITE
+LCALL WRITE
 MOV A,#' '
-ACALL WRITE
+LCALL WRITE
 MOV A,#'W'
-ACALL WRITE
+LCALL WRITE
 MOV A,#'e'
-ACALL WRITE
+LCALL WRITE
 MOV A,#'l'
-ACALL WRITE
+LCALL WRITE
 MOV A,#'c'
-ACALL WRITE
+LCALL WRITE
 MOV A,#'o'
-ACALL WRITE
+LCALL WRITE
 MOV A,#'m'
-ACALL WRITE
+LCALL WRITE
 MOV A,#'e'
-ACALL WRITE
+LCALL WRITE
 MOV A,#' '
-ACALL WRITE
+LCALL WRITE
 MOV A,#' '
-ACALL WRITE
+LCALL WRITE
 MOV A,#' '
-ACALL WRITE
+LCALL WRITE
 MOV A,#' '
-ACALL WRITE
+LCALL WRITE
 MOV A,#' '
-ACALL WRITE
+LCALL WRITE
 RET
 
 TEXT2:			;Writes 'RH = ' to Display
 MOV A,#'R'
-ACALL WRITE
+LCALL WRITE
 MOV A,#'H'
-ACALL WRITE
+LCALL WRITE
 MOV A,#' '
-ACALL WRITE
+LCALL WRITE
 MOV A,#'='
-ACALL WRITE
+LCALL WRITE
 MOV A,#' '
-ACALL WRITE
+LCALL WRITE
 RET 
 TEXT3: 
 MOV A,#' '
-ACALL WRITE
+LCALL WRITE
 MOV A,#' '
-ACALL WRITE
+LCALL WRITE
 MOV A,#'O'
-ACALL WRITE
+LCALL WRITE
 MOV A,#'N'
-ACALL WRITE
+LCALL WRITE
 RET
  
  TEXT4:
 MOV A,#' '
-ACALL WRITE
+LCALL WRITE
 MOV A,#'O'
-ACALL WRITE
+LCALL WRITE
 MOV A,#'F'
-ACALL WRITE
+LCALL WRITE
 MOV A,#'F'
-ACALL WRITE
+LCALL WRITE
 RET
 
 LCD_INIT:		;Initializtion for the LCD
