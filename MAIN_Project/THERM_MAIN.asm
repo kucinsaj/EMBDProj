@@ -17,9 +17,9 @@ ACALL LCD_INIT			;Call LCD Init subroutine
 ACALL WELCOME			;Call Welcome Text
 
 MAIN:			;Main Routine
-MOV R1,#16D			;Set R1 -> 16D ->10H
+MOV R1,#8D			;Set R1 -> 8D ->08H
 SETB P3.5			;Set DHT11 Data Port
-CLR P3.5			;CLR DHT11 Data Port
+CLR P3.5			;Clear DHT11 Data Port
 ;ACALL DELAY1			;Delay
 SETB P3.5			;Set DHT11 Data Port
 WAIT1:JB P3.5,$			;Wait till Data Port LOW
@@ -37,18 +37,32 @@ CLR TR1				;Stop Timer 1
 MOV A,TL1			;Move Timer 1 Low to ACC
 SUBB A,#50D			;ACC - 50D[00110010b] If carry is set, bit is low
 MOV A,R0			;Move Register 0 to ACC
-JB PSW.7, NEXT			;Jump to Next if Carry High
-SETB ACC.0			;Set ACC.0 to 1
+JB PSW.7, LOW			;Jump to Next if Carry High
+SETB ACC.0			;Set ACC.0 to 1 -- High Bit Recieved
 SJMP DISP			;Jump to DISP
 
-NEXT:
-CLR ACC.0			;Clear ACC Bit 0
+LOW:
+CLR ACC.0			;Clear ACC Bit 0 -- Low Bit Recieved
 
 DISP:
 MOV TL1,#00D			;Set Timer 1 Low -> 0H
 CLR PSW.7			;Clear carry flag
 DJNZ R1,DATALOOP		;Decrement R1, and Jump to DATALOOP if not zero
+JB R7.0, AGAIN			;Jump if Decimal skip bit = 1
+JB PSW.F0, SAVETEMP		;If F0 is 1, Save Temp
+SAVEHUM:
+MOV HUM, A			;Store Accumulator Value in HUM
+SETB R7.0			;Set Skip Decimal Data
+LJMP DATALOOP
+AGAIN:
+SETB PSW.F0			;Set Directing bit   0 = HUM   1 = TEMP
+LJMP DATALOOP
+SAVETEMP:
+MOV TEMP, A			;Store Accumulator Value in TEMP
+CLR PSW.F0			;Clear Directing bit   0 = HUM   1 = TEMP
+CLR R7.0			;Clear Decimal Skip bit
 
+DIAGNOSTIC_DISPLAY:	;Displays Full Diagnostic screen with updating values
 ACALL LINE2
 ACALL TEXT2
 ACALL HMDTY
@@ -107,27 +121,35 @@ MOV P0,A
    ; ACALL DELAY
     RET
 
-HMDTY:MOV A,R0
-      MOV B,#10D
-      DIV AB
-      MOV R2,B
-      MOV B,#10D
-      DIV AB
-      ACALL ASCII
-      ACALL WRITE
-      MOV A,B
-      ACALL ASCII
-      ACALL WRITE
-      MOV A,R2
-      ACALL ASCII
-      ACALL WRITE
-      MOV A,#'%'
-      ACALL WRITE
-      RET
+HMDTY:			;Assembles Humidity reading percentage
+MOV A,HUM			;Store HUM Value in ACC
+MOV B,#10D			;Store 10D in B ACC
+DIV AB				;Divide ACC by B ACC
+MOV R3,B			;Store remainder in register 3
+MOV B,#10D			;Store 10D in B ACC
+DIV AB				;Divide ACC by B ACC
+ACALL ASCII			;Convert to ASCII
+ACALL WRITE			;Write to Display
+MOV A,B				;Store remainder in ACC
+ACALL ASCII			;Convert to ASCII
+ACALL WRITE			;Write to Display
+MOV A,R3			;Store register 3 in ACC
+ACALL ASCII			;Convert to ASCII
+ACALL WRITE			;Write to Display
+MOV A,#'%'			;Store Percent symbol in ACC
+ACALL WRITE			;Write to Display
+RET
 
 
 WELCOME:
-
+MOV A,#' '
+ACALL WRITE
+MOV A,#' '
+ACALL WRITE
+MOV A,#' '
+ACALL WRITE
+MOV A,#' '
+ACALL WRITE
 MOV A,#'W'
 ACALL WRITE
 MOV A,#'e'
@@ -148,38 +170,45 @@ MOV A,#' '
 ACALL WRITE
 MOV A,#' '
 ACALL WRITE
+MOV A,#' '
+ACALL WRITE
+MOV A,#' '
+ACALL WRITE
 RET
 
-TEXT2: MOV A,#'R'
-       ACALL WRITE
-       MOV A,#'H'
-       ACALL WRITE
-       MOV A,#' '
-       ACALL WRITE
-       MOV A,#'='
-       ACALL WRITE
-       MOV A,#' '
-       ACALL WRITE
-       RET 
- TEXT3: MOV A,#' '
-       ACALL WRITE
-       MOV A,#' '
-       ACALL WRITE
-       MOV A,#'O'
-       ACALL WRITE
-       MOV A,#'N'
-       ACALL WRITE
-       RET
+TEXT2:			;Writes 'RH = ' to Display
+MOV A,#'R'
+ACALL WRITE
+MOV A,#'H'
+ACALL WRITE
+MOV A,#' '
+ACALL WRITE
+MOV A,#'='
+ACALL WRITE
+MOV A,#' '
+ACALL WRITE
+RET 
+TEXT3: 
+MOV A,#' '
+ACALL WRITE
+MOV A,#' '
+ACALL WRITE
+MOV A,#'O'
+ACALL WRITE
+MOV A,#'N'
+ACALL WRITE
+RET
  
- TEXT4:MOV A,#' '
-       ACALL WRITE
-       MOV A,#'O'
-       ACALL WRITE
-       MOV A,#'F'
-       ACALL WRITE
-       MOV A,#'F'
-       ACALL WRITE
-       RET
+ TEXT4:
+MOV A,#' '
+ACALL WRITE
+MOV A,#'O'
+ACALL WRITE
+MOV A,#'F'
+ACALL WRITE
+MOV A,#'F'
+ACALL WRITE
+RET
 
 LCD_INIT:		;Initializtion for the LCD
 MOV A,#38H			;Set Function SET
