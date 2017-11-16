@@ -37,7 +37,7 @@ CLR TR1				;Stop Timer 1
 MOV A,TL1			;Move Timer 1 Low to ACC
 SUBB A,#50D			;ACC - 50D[00110010b] If carry is set, bit is low
 MOV A,R0			;Move Register 0 to ACC
-JB PSW.7, LOW			;Jump to Next if Carry High
+JB PSW.7, LOW			;Jump to LOW if Carry High
 SETB ACC.0			;Set ACC.0 to 1 -- High Bit Recieved
 SJMP DISP			;Jump to DISP
 
@@ -53,9 +53,9 @@ JB PSW.5, SAVETEMP		;If F0 is 1, Save Temp
 SAVEHUM:
 MOV HUM, A			;Store Accumulator Value in HUM
 SETB PSW.6			;Set Skip Decimal Data
-LJMP DATALOOP
 AGAIN:
 SETB PSW.5			;Set Directing bit   0 = HUM   1 = TEMP
+MOV R1, #08D
 LJMP DATALOOP
 SAVETEMP:
 MOV TEMP, A			;Store Accumulator Value in TEMP
