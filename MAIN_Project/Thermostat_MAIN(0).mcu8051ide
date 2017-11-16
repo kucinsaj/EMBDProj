@@ -238,7 +238,7 @@
 		<graph
 			grid="y"
 			magnification="0"
-			enabled="0"
+			enabled="1"
 			marks_s="X0000000000000000000000000000000000000000000"
 			marks_l="X0000000000000000000000000000000000000000000"
 			marks_o="X0000000000000000000000000000000000000000000"
@@ -272,8 +272,8 @@
 		pwin_orient="horizontal">
 
 		<file name="THERM_MAIN.asm" active="yes" o_bookmark="0" p_bookmark="0" file_index="0" read_only="0" highlight="0">
-			<actual_line value="56"/>
-			<md5_hash value="7AD845111AB13A87E1C6C439F8E32823"/>
+			<actual_line value="90"/>
+			<md5_hash value="16040C9FA5268CB25B0327AD74852880"/>
 			<path><![CDATA[]]></path>
 			<bookmarks>
 				0

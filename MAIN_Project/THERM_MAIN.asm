@@ -48,19 +48,19 @@ DISP:
 MOV TL1,#00D			;Set Timer 1 Low -> 0H
 CLR PSW.7			;Clear carry flag
 DJNZ R1,DATALOOP		;Decrement R1, and Jump to DATALOOP if not zero
-JB R7.0, AGAIN			;Jump if Decimal skip bit = 1
-JB PSW.F0, SAVETEMP		;If F0 is 1, Save Temp
+JB PSW.6, AGAIN			;Jump if Decimal skip bit = 1
+JB PSW.5, SAVETEMP		;If F0 is 1, Save Temp
 SAVEHUM:
 MOV HUM, A			;Store Accumulator Value in HUM
-SETB R7.0			;Set Skip Decimal Data
+SETB PSW.6			;Set Skip Decimal Data
 LJMP DATALOOP
 AGAIN:
-SETB PSW.F0			;Set Directing bit   0 = HUM   1 = TEMP
+SETB PSW.5			;Set Directing bit   0 = HUM   1 = TEMP
 LJMP DATALOOP
 SAVETEMP:
 MOV TEMP, A			;Store Accumulator Value in TEMP
-CLR PSW.F0			;Clear Directing bit   0 = HUM   1 = TEMP
-CLR R7.0			;Clear Decimal Skip bit
+CLR PSW.5			;Clear Directing bit   0 = HUM   1 = TEMP
+CLR PSW.6			;Clear Decimal Skip bit
 
 DIAGNOSTIC_DISPLAY:	;Displays Full Diagnostic screen with updating values
 LCALL LINE2
@@ -100,16 +100,17 @@ NEXT1:
 LCALL TEXT4
 CLR P2.0
 
-DISP1:CLR PSW.7
+DISP1:
+CLR PSW.7
 RET
 
- CMD: MOV P0,A
-    CLR RS
-    CLR RW
-    SETB E
-    CLR E
-    ;LCALL DELAY
-    RET
+SETD: MOV P0,A
+CLR RS
+CLR RW
+SETB E
+CLR E
+;LCALL DELAY
+RET
 
 WRITE:
 
@@ -140,7 +141,7 @@ MOV A,#'%'			;Store Percent symbol in ACC
 LCALL WRITE			;Write to Display
 RET
 
-HMDTY:			;Assembles Temperature reading
+TEMPERATURE:		;Assembles Temperature reading
 MOV A,HUM			;Store HUM Value in ACC
 MOV B,#10D			;Store 10D in B ACC
 DIV AB				;Divide ACC by B ACC
