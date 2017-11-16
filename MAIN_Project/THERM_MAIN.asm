@@ -80,14 +80,14 @@ CLR TR0				;Clear Timer RUN
 CLR TF0				;Clear Timer Overflow
 RET
 
-DELAY2:
+DELAY2:			;******Change to timer_counter
 ;MOV R1,#112D
 ;BACK:
 ;LCALL DELAY1
 ;DJNZ R1,BACK
 RET
 
-CHECK:
+CHECK:			;Basic value check
 MOV A,R0
 MOV B,#65D
 SUBB A,B
@@ -104,7 +104,8 @@ DISP1:
 CLR PSW.7
 RET
 
-SETD: MOV P0,A
+SETD:
+MOV P0,A
 CLR RS
 CLR RW
 SETB E
@@ -142,7 +143,7 @@ LCALL WRITE			;Write to Display
 RET
 
 TEMPERATURE:		;Assembles Temperature reading
-MOV A,HUM			;Store HUM Value in ACC
+MOV A,TEMP			;Store TEMP Value in ACC
 MOV B,#10D			;Store 10D in B ACC
 DIV AB				;Divide ACC by B ACC
 MOV R3,B			;Store remainder in register 3
