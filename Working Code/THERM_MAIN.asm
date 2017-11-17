@@ -9,7 +9,7 @@ ORG 000H
 ;;;;;;INIT;;;;;;
 INIT:			;Program Initialization
 MOV DPTR,#VALUES		;Move DPTR to Values LUT
-SETB P3.5			;Set DHT11 Data Port
+SETB P0.0			;Set DHT11 Data Port
 CLR P2.0			;Clear Output*
 MOV TMOD,#00100001B		;Set TMOD
 MOV TL1,#00D			;Set Timer Low Byte
@@ -18,21 +18,21 @@ LCALL WELCOME			;Call Welcome Text
 
 MAIN:			;Main Routine
 MOV R1,#8D			;Set R1 -> 8D ->08H
-SETB P3.5			;Set DHT11 Data Port
-CLR P3.5			;Clear DHT11 Data Port
+SETB P0.0			;Set DHT11 Data Port
+CLR P0.0			;Clear DHT11 Data Port
 LCALL DELAY1			;Delay
-SETB P3.5			;Set DHT11 Data Port
-WAIT1:JB P3.5,$			;Wait till Data Port LOW
-WAIT2:JNB P3.5,$		;Wait till Data Port HIGH
-WAIT3:JB P3.5,$			;Wait till Data Port LOW
+SETB P0.0			;Set DHT11 Data Port
+WAIT1:JB P0.0,$			;Wait till Data Port LOW
+WAIT2:JNB P0.0,$		;Wait till Data Port HIGH
+WAIT3:JB P0.0,$			;Wait till Data Port LOW
 
 DATALOOP:		;DHT11 Data Colection LOOP
-JNB P3.5,DATALOOP		;Wait till Data Port HIGH
+JNB P0.0,DATALOOP		;Wait till Data Port HIGH
 RL A				;Rotate ACC Left
 MOV R0,A			;Move ACC to Register 0
 SETB TR1			;SET Timer 1 RUN
 WAIT4:
-JB P3.5,$			;Wait till Data Port LOW
+JB P0.0,$			;Wait till Data Port LOW
 CLR TR1				;Stop Timer 1
 MOV A,TL1			;Move Timer 1 Low to ACC
 SUBB A,#50D			;ACC - 50D[00110010b] If carry is set, bit is low
