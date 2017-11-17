@@ -9,15 +9,15 @@ THERM_MAIN                                                                      
                          8     ORG 000H
                          9     ;;;;;;INIT;;;;;;
                         10     INIT:                   ;Program Initialization
-0000 90020F             11     MOV DPTR,#VALUES                ;Move DPTR to Values LUT
+0000 900206             11     MOV DPTR,#VALUES                ;Move DPTR to Values LUT
 0003 D280               12     SETB P0.0                       ;Set DHT11 Data Port
 0005 C2A0               13     CLR P2.0                        ;Clear Output*
 0007 758921             14     MOV TMOD,#00100001B             ;Set TMOD
 000A 758B00             15     MOV TL1,#00D                    ;Set Timer Low Byte
-000D 1201D3             16     LCALL LCD_INIT                  ;Call LCD Init subroutine
-0010 120116             17     LCALL WELCOME                   ;Call Welcome Text
-0013 12008A             18     LCALL DELAY2
-                        19
+000D 1201CD             16     LCALL LCD_INIT                  ;Call LCD Init subroutine
+0010 120110             17     LCALL WELCOME                   ;Call Welcome Text
+                        18     ;LCALL DELAY2
+0013 020204             19     LJMP    ENDP
                         20
                         21     MAIN:                   ;Main Routine
 0016 7908               22     MOV R1,#8D                      ;Set R1 -> 8D ->08H
@@ -66,12 +66,12 @@ THERM_MAIN                                                                      
 0060 C2D6               65     CLR PSW.6                       ;Clear Decimal Skip bit
                         66
                         67     DIAGNOSTIC_DISPLAY:     ;Displays Full Diagnostic screen with updating values
-0062 120167             68     LCALL DIAGTEXT                  ;Title
-0065 1201F0             69     LCALL LINE2                     ;Jump to line 2
-0068 1201B3             70     LCALL TEXT2                     ; RH=
-006B 1200C3             71     LCALL HMDTY                     ; Hum reading
-006E 1201C3             72     LCALL TEXT3                     ; T=
-0071 1200EA             73     LCALL TEMPERATURE               ; Temp reading
+0062 120161             68     LCALL DIAGTEXT                  ;Title
+0065 1201E7             69     LCALL LINE2                     ;Jump to line 2
+0068 1201AD             70     LCALL TEXT2                     ; RH=
+006B 1200BD             71     LCALL HMDTY                     ; Hum reading
+006E 1201BD             72     LCALL TEXT3                     ; T=
+0071 1200E4             73     LCALL TEMPERATURE               ; Temp reading
 0074 12008A             74     LCALL DELAY2                    ; 2 sec delay
 0077 020016             75     LJMP MAIN
                         76
@@ -97,7 +97,7 @@ THERM_MAIN                                                                      
 0093 75F041             96     MOV B,#65D
 0096 95F0               97     SUBB A,B
 0098 20D707             98     JB PSW.7,NEXT1
-009B 1201C3             99     LCALL TEXT3
+009B 1201BD             99     LCALL TEXT3
 009E D2A0              100     SETB P2.0
 00A0 8002              101     SJMP DISP1
                        102
@@ -115,193 +115,193 @@ THERM_MAIN                                                                      
 00AB C2B1              114     CLR RW
 00AD D2B3              115     SETB E
 00AF C2B3              116     CLR E
-00B1 1201F6            117     LCALL DELAY
-00B4 22                118     RET
+                       117     ;LCALL DELAY
+00B1 22                118     RET
                        119
                        120     WRITE:                  ;Writes Data to Display
                        121
-00B5 F590              122     MOV P1,A
-00B7 D2B2              123     SETB RS
-00B9 C2B1              124     CLR RW
-00BB D2B3              125     SETB E
-00BD C2B3              126     CLR E
-00BF 1201F6            127     LCALL DELAY
-00C2 22                128     RET
+00B2 F590              122     MOV P1,A
+00B4 D2B2              123     SETB RS
+00B6 C2B1              124     CLR RW
+00B8 D2B3              125     SETB E
+00BA C2B3              126     CLR E
+                       127     ;LCALL DELAY
+00BC 22                128     RET
                        129
                        130     HMDTY:                  ;Assembles Humidity reading percentage
-00C3 E549              131     MOV A,HUM                       ;Store HUM Value in ACC
-00C5 75F00A            132     MOV B,#10D                      ;Store 10D in B ACC
-00C8 84                133     DIV AB                          ;Divide ACC by B ACC
-00C9 ABF0              134     MOV R3,B                        ;Store remainder in register 3
-00CB 75F00A            135     MOV B,#10D                      ;Store 10D in B ACC
-00CE 84                136     DIV AB                          ;Divide ACC by B ACC
-00CF 12020B            137     LCALL ASCII                     ;Convert to ASCII
-00D2 1200B5            138     LCALL WRITE                     ;Write to Display
-00D5 E5F0              139     MOV A,B                         ;Store remainder in ACC
-00D7 12020B            140     LCALL ASCII                     ;Convert to ASCII
-00DA 1200B5            141     LCALL WRITE                     ;Write to Display
-00DD EB                142     MOV A,R3                        ;Store register 3 in ACC
-00DE 12020B            143     LCALL ASCII                     ;Convert to ASCII
-00E1 1200B5            144     LCALL WRITE                     ;Write to Display
-00E4 7425              145     MOV A,#'%'                      ;Store Percent symbol in ACC
-00E6 1200B5            146     LCALL WRITE                     ;Write to Display
-00E9 22                147     RET
+00BD E549              131     MOV A,HUM                       ;Store HUM Value in ACC
+00BF 75F00A            132     MOV B,#10D                      ;Store 10D in B ACC
+00C2 84                133     DIV AB                          ;Divide ACC by B ACC
+00C3 ABF0              134     MOV R3,B                        ;Store remainder in register 3
+00C5 75F00A            135     MOV B,#10D                      ;Store 10D in B ACC
+00C8 84                136     DIV AB                          ;Divide ACC by B ACC
+00C9 120202            137     LCALL ASCII                     ;Convert to ASCII
+00CC 1200B2            138     LCALL WRITE                     ;Write to Display
+00CF E5F0              139     MOV A,B                         ;Store remainder in ACC
+00D1 120202            140     LCALL ASCII                     ;Convert to ASCII
+00D4 1200B2            141     LCALL WRITE                     ;Write to Display
+00D7 EB                142     MOV A,R3                        ;Store register 3 in ACC
+00D8 120202            143     LCALL ASCII                     ;Convert to ASCII
+00DB 1200B2            144     LCALL WRITE                     ;Write to Display
+00DE 7425              145     MOV A,#'%'                      ;Store Percent symbol in ACC
+00E0 1200B2            146     LCALL WRITE                     ;Write to Display
+00E3 22                147     RET
                        148
                        149     TEMPERATURE:            ;Assembles Temperature reading
-00EA E548              150     MOV A,TEMP                      ;Store TEMP Value in ACC
-00EC 75F00A            151     MOV B,#10D                      ;Store 10D in B ACC
-00EF 84                152     DIV AB                          ;Divide ACC by B ACC
-00F0 ABF0              153     MOV R3,B                        ;Store remainder in register 3
-00F2 75F00A            154     MOV B,#10D                      ;Store 10D in B ACC
-00F5 84                155     DIV AB                          ;Divide ACC by B ACC
-00F6 12020B            156     LCALL ASCII                     ;Convert to ASCII
-00F9 1200B5            157     LCALL WRITE                     ;Write to Display
-00FC E5F0              158     MOV A,B                         ;Store remainder in ACC
-00FE 12020B            159     LCALL ASCII                     ;Convert to ASCII
-0101 1200B5            160     LCALL WRITE                     ;Write to Display
-0104 EB                161     MOV A,R3                        ;Store register 3 in ACC
-0105 12020B            162     LCALL ASCII                     ;Convert to ASCII
-0108 1200B5            163     LCALL WRITE                     ;Write to Display
-010B 74DF              164     MOV A,#11011111b                ;Store Degree symbol in ACC
-010D 1200B5            165     LCALL WRITE                     ;Write to Display
-0110 7443              166     MOV A,#'C'                      ;Store 'C' in ACC
-0112 1200B5            167     LCALL WRITE
-0115 22                168     RET
+00E4 E548              150     MOV A,TEMP                      ;Store TEMP Value in ACC
+00E6 75F00A            151     MOV B,#10D                      ;Store 10D in B ACC
+00E9 84                152     DIV AB                          ;Divide ACC by B ACC
+00EA ABF0              153     MOV R3,B                        ;Store remainder in register 3
+00EC 75F00A            154     MOV B,#10D                      ;Store 10D in B ACC
+00EF 84                155     DIV AB                          ;Divide ACC by B ACC
+00F0 120202            156     LCALL ASCII                     ;Convert to ASCII
+00F3 1200B2            157     LCALL WRITE                     ;Write to Display
+00F6 E5F0              158     MOV A,B                         ;Store remainder in ACC
+00F8 120202            159     LCALL ASCII                     ;Convert to ASCII
+00FB 1200B2            160     LCALL WRITE                     ;Write to Display
+00FE EB                161     MOV A,R3                        ;Store register 3 in ACC
+00FF 120202            162     LCALL ASCII                     ;Convert to ASCII
+0102 1200B2            163     LCALL WRITE                     ;Write to Display
+0105 74DF              164     MOV A,#11011111b                ;Store Degree symbol in ACC
+0107 1200B2            165     LCALL WRITE                     ;Write to Display
+010A 7443              166     MOV A,#'C'                      ;Store 'C' in ACC
+010C 1200B2            167     LCALL WRITE
+010F 22                168     RET
                        169
                        170     WELCOME:
-0116 7420              171     MOV A,#' '
-0118 1200B5            172     LCALL WRITE
-011B 7420              173     MOV A,#' '
-011D 1200B5            174     LCALL WRITE
-0120 7420              175     MOV A,#' '
-0122 1200B5            176     LCALL WRITE
-0125 7420              177     MOV A,#' '
-0127 1200B5            178     LCALL WRITE
-012A 7457              179     MOV A,#'W'
-012C 1200B5            180     LCALL WRITE
-012F 7465              181     MOV A,#'e'
-0131 1200B5            182     LCALL WRITE
-0134 746C              183     MOV A,#'l'
-0136 1200B5            184     LCALL WRITE
-0139 7463              185     MOV A,#'c'
-013B 1200B5            186     LCALL WRITE
-013E 746F              187     MOV A,#'o'
-0140 1200B5            188     LCALL WRITE
-0143 746D              189     MOV A,#'m'
-0145 1200B5            190     LCALL WRITE
-0148 7465              191     MOV A,#'e'
-014A 1200B5            192     LCALL WRITE
-014D 7420              193     MOV A,#' '
-014F 1200B5            194     LCALL WRITE
-0152 7420              195     MOV A,#' '
-0154 1200B5            196     LCALL WRITE
-0157 7420              197     MOV A,#' '
-0159 1200B5            198     LCALL WRITE
-015C 7420              199     MOV A,#' '
-015E 1200B5            200     LCALL WRITE
-0161 7420              201     MOV A,#' '
-0163 1200B5            202     LCALL WRITE
-0166 22                203     RET
+0110 7420              171     MOV A,#' '
+0112 1200B2            172     LCALL WRITE
+0115 7420              173     MOV A,#' '
+0117 1200B2            174     LCALL WRITE
+011A 7420              175     MOV A,#' '
+011C 1200B2            176     LCALL WRITE
+011F 7420              177     MOV A,#' '
+0121 1200B2            178     LCALL WRITE
+0124 7457              179     MOV A,#'W'
+0126 1200B2            180     LCALL WRITE
+0129 7465              181     MOV A,#'e'
+012B 1200B2            182     LCALL WRITE
+012E 746C              183     MOV A,#'l'
+0130 1200B2            184     LCALL WRITE
+0133 7463              185     MOV A,#'c'
+0135 1200B2            186     LCALL WRITE
+0138 746F              187     MOV A,#'o'
+013A 1200B2            188     LCALL WRITE
+013D 746D              189     MOV A,#'m'
+013F 1200B2            190     LCALL WRITE
+0142 7465              191     MOV A,#'e'
+0144 1200B2            192     LCALL WRITE
+0147 7420              193     MOV A,#' '
+0149 1200B2            194     LCALL WRITE
+014C 7420              195     MOV A,#' '
+014E 1200B2            196     LCALL WRITE
+0151 7420              197     MOV A,#' '
+0153 1200B2            198     LCALL WRITE
+0156 7420              199     MOV A,#' '
+0158 1200B2            200     LCALL WRITE
+015B 7420              201     MOV A,#' '
+015D 1200B2            202     LCALL WRITE
+0160 22                203     RET
                        204
                        205     DIAGTEXT:
-0167 7448              206     MOV A,#'H'
-0169 1200B5            207     LCALL WRITE
-016C 7455              208     MOV A,#'U'
-016E 1200B5            209     LCALL WRITE
-0171 744D              210     MOV A,#'M'
-0173 1200B5            211     LCALL WRITE
-0176 7420              212     MOV A,#' '
-0178 1200B5            213     LCALL WRITE
-017B 7426              214     MOV A,#'&'
-017D 1200B5            215     LCALL WRITE
-0180 7420              216     MOV A,#' '
-0182 1200B5            217     LCALL WRITE
-0185 7454              218     MOV A,#'T'
-0187 1200B5            219     LCALL WRITE
-018A 7445              220     MOV A,#'E'
-018C 1200B5            221     LCALL WRITE
-018F 744D              222     MOV A,#'M'
-0191 1200B5            223     LCALL WRITE
-0194 7450              224     MOV A,#'P'
-0196 1200B5            225     LCALL WRITE
-0199 7420              226     MOV A,#' '
-019B 1200B5            227     LCALL WRITE
-019E 7444              228     MOV A,#'D'
-01A0 1200B5            229     LCALL WRITE
-01A3 7449              230     MOV A,#'I'
-01A5 1200B5            231     LCALL WRITE
-01A8 7441              232     MOV A,#'A'
-01AA 1200B5            233     LCALL WRITE
-01AD 7447              234     MOV A,#'G'
-01AF 1200B5            235     LCALL WRITE
-01B2 22                236     RET
+0161 7448              206     MOV A,#'H'
+0163 1200B2            207     LCALL WRITE
+0166 7455              208     MOV A,#'U'
+0168 1200B2            209     LCALL WRITE
+016B 744D              210     MOV A,#'M'
+016D 1200B2            211     LCALL WRITE
+0170 7420              212     MOV A,#' '
+0172 1200B2            213     LCALL WRITE
+0175 7426              214     MOV A,#'&'
+0177 1200B2            215     LCALL WRITE
+017A 7420              216     MOV A,#' '
+017C 1200B2            217     LCALL WRITE
+017F 7454              218     MOV A,#'T'
+0181 1200B2            219     LCALL WRITE
+0184 7445              220     MOV A,#'E'
+0186 1200B2            221     LCALL WRITE
+0189 744D              222     MOV A,#'M'
+018B 1200B2            223     LCALL WRITE
+018E 7450              224     MOV A,#'P'
+0190 1200B2            225     LCALL WRITE
+0193 7420              226     MOV A,#' '
+0195 1200B2            227     LCALL WRITE
+0198 7444              228     MOV A,#'D'
+019A 1200B2            229     LCALL WRITE
+019D 7449              230     MOV A,#'I'
+019F 1200B2            231     LCALL WRITE
+01A2 7441              232     MOV A,#'A'
+01A4 1200B2            233     LCALL WRITE
+01A7 7447              234     MOV A,#'G'
+01A9 1200B2            235     LCALL WRITE
+01AC 22                236     RET
                        237     TEXT2:                  ;Writes 'RH = ' to Display
-01B3 7452              238     MOV A,#'R'
-01B5 1200B5            239     LCALL WRITE
-01B8 7448              240     MOV A,#'H'
-01BA 1200B5            241     LCALL WRITE
-01BD 743D              242     MOV A,#'='
-01BF 1200B5            243     LCALL WRITE
+01AD 7452              238     MOV A,#'R'
+01AF 1200B2            239     LCALL WRITE
+01B2 7448              240     MOV A,#'H'
+01B4 1200B2            241     LCALL WRITE
+01B7 743D              242     MOV A,#'='
+01B9 1200B2            243     LCALL WRITE
                        244
-01C2 22                245     RET
+01BC 22                245     RET
                        246     TEXT3:
-01C3 7420              247     MOV A,#' '
-01C5 1200B5            248     LCALL WRITE
-01C8 7454              249     MOV A,#'T'
-01CA 1200B5            250     LCALL WRITE
-01CD 743D              251     MOV A,#'='
-01CF 1200B5            252     LCALL WRITE
-01D2 22                253     RET
+01BD 7420              247     MOV A,#' '
+01BF 1200B2            248     LCALL WRITE
+01C2 7454              249     MOV A,#'T'
+01C4 1200B2            250     LCALL WRITE
+01C7 743D              251     MOV A,#'='
+01C9 1200B2            252     LCALL WRITE
+01CC 22                253     RET
                        254
                        255
                        256     LCD_INIT:               ;Initializtion for the LCD
-01D3 7438              257     MOV A,#38H                      ;Set Function SET
-01D5 1200A7            258     LCALL SETD                      ;SET
-01D8 740F              259     MOV A,#0FH                      ;Set Display/Cursor Settings
-01DA 1200A7            260     LCALL SETD                      ;SET
-01DD 7401              261     MOV A,#1H                       ;Clear Display
-01DF 1200A7            262     LCALL SETD                      ;SET
-01E2 7406              263     MOV A,#6H                       ;Entry Mode Set
-01E4 1200A7            264     LCALL SETD                      ;SET
-01E7 7480              265     MOV A,#80H                      ;Set DDRAM Address
-01E9 1200A7            266     LCALL SETD                      ;SET
-01EC 1201F6            267     LCALL DELAY
-01EF 22                268     RET
+01CD 7438              257     MOV A,#38H                      ;Set Function SET
+01CF 1200A7            258     LCALL SETD                      ;SET
+01D2 740F              259     MOV A,#0FH                      ;Set Display/Cursor Settings
+01D4 1200A7            260     LCALL SETD                      ;SET
+01D7 7401              261     MOV A,#1H                       ;Clear Display
+01D9 1200A7            262     LCALL SETD                      ;SET
+01DC 7406              263     MOV A,#6H                       ;Entry Mode Set
+01DE 1200A7            264     LCALL SETD                      ;SET
+01E1 7480              265     MOV A,#80H                      ;Set DDRAM Address
+01E3 1200A7            266     LCALL SETD                      ;SET
+                       267     ;LCALL DELAY
+01E6 22                268     RET
                        269
                        270     LINE2:                  ;Shifts Display to Line 2
-01F0 74C0              271     MOV A,#0C0H
-01F2 1200A7            272     LCALL SETD                      ;SET
-01F5 22                273     RET
+01E7 74C0              271     MOV A,#0C0H
+01E9 1200A7            272     LCALL SETD                      ;SET
+01EC 22                273     RET
                        274
                        275     DELAY:                  ;LCD Delay
-01F6 C2B3              276     CLR E                           ;Clear Enable
-01F8 C2B2              277     CLR RS                          ;Clear RS
-01FA D2B1              278     SETB RW                         ;Clear R/W
-01FC 7590FF            279     MOV P1,#0FFH                    ;Set P1 -> 1111 1111b
-01FF D2B3              280     SETB E                          ;Set Enable
-0201 E590              281     MOV A,P1                        ;Set ACC to P1
-0203 20E7F0            282     JB ACC.7,DELAY                  ;Jump to Delay if ACC.7 set
-0206 C2B3              283     CLR E                           ;Clear Enable
-0208 C2B1              284     CLR RW                          ;Clear R/W
-020A 22                285     RET
+01ED C2B3              276     CLR E                           ;Clear Enable
+01EF C2B2              277     CLR RS                          ;Clear RS
+01F1 D2B1              278     SETB RW                         ;Clear R/W
+01F3 7590FF            279     MOV P1,#0FFH                    ;Set P1 -> 1111 1111b
+01F6 D2B3              280     SETB E                          ;Set Enable
+01F8 E590              281     MOV A,P1                        ;Set ACC to P1
+01FA 20E7F0            282     JB ACC.7,DELAY                  ;Jump to Delay if ACC.7 set
+01FD C2B3              283     CLR E                           ;Clear Enable
+01FF C2B1              284     CLR RW                          ;Clear R/W
+0201 22                285     RET
                        286
                        287     ASCII:
-020B 93                288     MOVC A,@A+DPTR
-020C 22                289     RET
+0202 93                288     MOVC A,@A+DPTR
+0203 22                289     RET
                        290     ENDP:
-020D 80FE              291     SJMP ENDP
+0204 80FE              291     SJMP ENDP
                        292
                        293     VALUES:
-020F 30                294     DB  48D
-0210 31                295     DB  49D
-0211 32                296     DB  50D
-0212 33                297     DB  51D
-0213 34                298     DB  52D
-0214 35                299     DB  53D
-0215 36                300     DB  54D
-0216 37                301     DB  55D
-0217 38                302     DB  56D
-0218 39                303     DB  57D
+0206 30                294     DB  48D
+0207 31                295     DB  49D
+0208 32                296     DB  50D
+0209 33                297     DB  51D
+020A 34                298     DB  52D
+020B 35                299     DB  53D
+020C 36                300     DB  54D
+020D 37                301     DB  55D
+020E 38                302     DB  56D
+020F 39                303     DB  57D
                        304     END
 ASSEMBLY COMPLETE, NO ERRORS FOUND, NO WARNINGS
 
@@ -318,7 +318,7 @@ ADCON. . . . . . . . . . . . . . . .  D  ADDR  00F3H  NOT USED
 ADDH . . . . . . . . . . . . . . . .  D  ADDR  00F5H  NOT USED
 ADDL . . . . . . . . . . . . . . . .  D  ADDR  00F4H  NOT USED
 AGAIN. . . . . . . . . . . . . . . .  C  ADDR  0055H
-ASCII. . . . . . . . . . . . . . . .  C  ADDR  020BH
+ASCII. . . . . . . . . . . . . . . .  C  ADDR  0202H
 AUXR . . . . . . . . . . . . . . . .  D  ADDR  008EH  NOT USED
 AUXR1. . . . . . . . . . . . . . . .  D  ADDR  00A2H  NOT USED
 B. . . . . . . . . . . . . . . . . .  D  ADDR  00F0H
@@ -365,11 +365,11 @@ CR . . . . . . . . . . . . . . . . .  B  ADDR  00DEH  NOT USED
 CT2. . . . . . . . . . . . . . . . .  B  ADDR  00C9H  NOT USED
 CY . . . . . . . . . . . . . . . . .  B  ADDR  00D7H  NOT USED
 DATALOOP . . . . . . . . . . . . . .  C  ADDR  002AH
-DELAY. . . . . . . . . . . . . . . .  C  ADDR  01F6H
+DELAY. . . . . . . . . . . . . . . .  C  ADDR  01EDH
 DELAY1 . . . . . . . . . . . . . . .  C  ADDR  007AH
 DELAY2 . . . . . . . . . . . . . . .  C  ADDR  008AH
 DIAGNOSTIC_DISPLAY . . . . . . . . .  C  ADDR  0062H  NOT USED
-DIAGTEXT . . . . . . . . . . . . . .  C  ADDR  0167H
+DIAGTEXT . . . . . . . . . . . . . .  C  ADDR  0161H
 DISP . . . . . . . . . . . . . . . .  C  ADDR  0044H
 DISP1. . . . . . . . . . . . . . . .  C  ADDR  00A4H
 DP0H . . . . . . . . . . . . . . . .  D  ADDR  0083H  NOT USED
@@ -382,7 +382,7 @@ E. . . . . . . . . . . . . . . . . .  N  NUMB  00B3H
 EA . . . . . . . . . . . . . . . . .  B  ADDR  00AFH  NOT USED
 EC . . . . . . . . . . . . . . . . .  B  ADDR  00AEH  NOT USED
 EECON. . . . . . . . . . . . . . . .  D  ADDR  0096H  NOT USED
-ENDP . . . . . . . . . . . . . . . .  C  ADDR  020DH
+ENDP . . . . . . . . . . . . . . . .  C  ADDR  0204H
 ES . . . . . . . . . . . . . . . . .  B  ADDR  00ACH  NOT USED
 ET0. . . . . . . . . . . . . . . . .  B  ADDR  00A9H  NOT USED
 ET1. . . . . . . . . . . . . . . . .  B  ADDR  00ABH  NOT USED
@@ -395,7 +395,7 @@ EXTI0. . . . . . . . . . . . . . . .  C  ADDR  0003H  NOT USED
 EXTI1. . . . . . . . . . . . . . . .  C  ADDR  0013H  NOT USED
 F0 . . . . . . . . . . . . . . . . .  B  ADDR  00D5H  NOT USED
 FE . . . . . . . . . . . . . . . . .  B  ADDR  009FH  NOT USED
-HMDTY. . . . . . . . . . . . . . . .  C  ADDR  00C3H
+HMDTY. . . . . . . . . . . . . . . .  C  ADDR  00BDH
 HUM. . . . . . . . . . . . . . . . .  N  NUMB  0049H
 IE . . . . . . . . . . . . . . . . .  D  ADDR  00A8H  NOT USED
 IE0. . . . . . . . . . . . . . . . .  B  ADDR  0089H  NOT USED
@@ -414,8 +414,8 @@ IT1. . . . . . . . . . . . . . . . .  B  ADDR  008AH  NOT USED
 KBE. . . . . . . . . . . . . . . . .  D  ADDR  009DH  NOT USED
 KBF. . . . . . . . . . . . . . . . .  D  ADDR  009EH  NOT USED
 KBLS . . . . . . . . . . . . . . . .  D  ADDR  009CH  NOT USED
-LCD_INIT . . . . . . . . . . . . . .  C  ADDR  01D3H
-LINE2. . . . . . . . . . . . . . . .  C  ADDR  01F0H
+LCD_INIT . . . . . . . . . . . . . .  C  ADDR  01CDH
+LINE2. . . . . . . . . . . . . . . .  C  ADDR  01E7H
 LOW. . . . . . . . . . . . . . . . .  C  ADDR  0042H
 MAIN . . . . . . . . . . . . . . . .  C  ADDR  0016H
 NEXT1. . . . . . . . . . . . . . . .  C  ADDR  00A2H
@@ -493,9 +493,9 @@ TB8. . . . . . . . . . . . . . . . .  B  ADDR  009BH  NOT USED
 TCLK . . . . . . . . . . . . . . . .  B  ADDR  00CCH  NOT USED
 TCON . . . . . . . . . . . . . . . .  D  ADDR  0088H  NOT USED
 TEMP . . . . . . . . . . . . . . . .  N  NUMB  0048H
-TEMPERATURE. . . . . . . . . . . . .  C  ADDR  00EAH
-TEXT2. . . . . . . . . . . . . . . .  C  ADDR  01B3H
-TEXT3. . . . . . . . . . . . . . . .  C  ADDR  01C3H
+TEMPERATURE. . . . . . . . . . . . .  C  ADDR  00E4H
+TEXT2. . . . . . . . . . . . . . . .  C  ADDR  01ADH
+TEXT3. . . . . . . . . . . . . . . .  C  ADDR  01BDH
 TF0. . . . . . . . . . . . . . . . .  B  ADDR  008DH
 TF1. . . . . . . . . . . . . . . . .  B  ADDR  008FH  NOT USED
 TF2. . . . . . . . . . . . . . . . .  B  ADDR  00CFH  NOT USED
@@ -514,7 +514,7 @@ TR0. . . . . . . . . . . . . . . . .  B  ADDR  008CH
 TR1. . . . . . . . . . . . . . . . .  B  ADDR  008EH
 TR2. . . . . . . . . . . . . . . . .  B  ADDR  00CAH  NOT USED
 TXD. . . . . . . . . . . . . . . . .  B  ADDR  00B1H  NOT USED
-VALUES . . . . . . . . . . . . . . .  C  ADDR  020FH
+VALUES . . . . . . . . . . . . . . .  C  ADDR  0206H
 WAIT1. . . . . . . . . . . . . . . .  C  ADDR  0021H  NOT USED
 WAIT2. . . . . . . . . . . . . . . .  C  ADDR  0024H  NOT USED
 WAIT3. . . . . . . . . . . . . . . .  C  ADDR  0027H  NOT USED
@@ -522,6 +522,6 @@ WAIT4. . . . . . . . . . . . . . . .  C  ADDR  0031H  NOT USED
 WDTCON . . . . . . . . . . . . . . .  D  ADDR  00A7H  NOT USED
 WDTPRG . . . . . . . . . . . . . . .  D  ADDR  00A7H  NOT USED
 WDTRST . . . . . . . . . . . . . . .  D  ADDR  00A6H  NOT USED
-WELCOME. . . . . . . . . . . . . . .  C  ADDR  0116H
+WELCOME. . . . . . . . . . . . . . .  C  ADDR  0110H
 WR . . . . . . . . . . . . . . . . .  B  ADDR  00B6H  NOT USED
-WRITE. . . . . . . . . . . . . . . .  C  ADDR  00B5H
+WRITE. . . . . . . . . . . . . . . .  C  ADDR  00B2H
