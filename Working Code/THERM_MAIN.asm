@@ -1,7 +1,7 @@
 ;;;;;;Assign Port Names;;;;;;
-RS EQU P2.7
-RW EQU P2.6
-E  EQU P2.5
+RS EQU P3.2
+RW EQU P3.1
+E  EQU P3.3
 ;;;;;;Init Variables;;;;;;
 TEMP EQU 48H
 HUM  EQU 49H
@@ -20,7 +20,7 @@ MAIN:			;Main Routine
 MOV R1,#8D			;Set R1 -> 8D ->08H
 SETB P3.5			;Set DHT11 Data Port
 CLR P3.5			;Clear DHT11 Data Port
-;LCALL DELAY1			;Delay
+LCALL DELAY1			;Delay
 SETB P3.5			;Set DHT11 Data Port
 WAIT1:JB P3.5,$			;Wait till Data Port LOW
 WAIT2:JNB P3.5,$		;Wait till Data Port HIGH
@@ -63,11 +63,13 @@ CLR PSW.5			;Clear Directing bit   0 = HUM   1 = TEMP
 CLR PSW.6			;Clear Decimal Skip bit
 
 DIAGNOSTIC_DISPLAY:	;Displays Full Diagnostic screen with updating values
-LCALL LINE2
-LCALL TEXT2
-LCALL HMDTY
-LCALL CHECK
-LCALL DELAY2
+LCALL DIAGTEXT			;Title
+LCALL LINE2			;Jump to line 2
+LCALL TEXT2			; RH=
+LCALL HMDTY			; Hum reading
+LCALL TEXT3			; T= 
+LCALL TEMPERATURE		; Temp reading
+LCALL DELAY2			; 2 sec delay
 LJMP MAIN
 
 
@@ -81,10 +83,10 @@ CLR TF0				;Clear Timer Overflow
 RET
 
 DELAY2:			;******Change to timer_counter
-;MOV R1,#112D
-;BACK:
-;LCALL DELAY1
-;DJNZ R1,BACK
+MOV R1,#112D
+BACK:
+LCALL DELAY1
+DJNZ R1,BACK
 RET
 
 CHECK:			;Basic value check
@@ -104,23 +106,23 @@ DISP1:
 CLR PSW.7
 RET
 
-SETD:
-MOV P0,A
+SETD:			;For LCD Func
+MOV P1,A
 CLR RS
 CLR RW
 SETB E
 CLR E
-;LCALL DELAY
+LCALL DELAY
 RET
 
-WRITE:
+WRITE:			;Writes Data to Display
 
-MOV P0,A
+MOV P1,A
 SETB RS
 CLR RW
 SETB E
 CLR E
-;LCALL DELAY
+LCALL DELAY
 RET
 
 HMDTY:			;Assembles Humidity reading percentage
@@ -198,39 +200,56 @@ MOV A,#' '
 LCALL WRITE
 RET
 
+DIAGTEXT:
+MOV A,#'H'
+LCALL WRITE
+MOV A,#'U'
+LCALL WRITE
+MOV A,#'M'
+LCALL WRITE
+MOV A,#' '
+LCALL WRITE
+MOV A,#'&'
+LCALL WRITE
+MOV A,#' '
+LCALL WRITE
+MOV A,#'T'
+LCALL WRITE
+MOV A,#'E'
+LCALL WRITE
+MOV A,#'M'
+LCALL WRITE
+MOV A,#'P'
+LCALL WRITE
+MOV A,#' '
+LCALL WRITE
+MOV A,#'D'
+LCALL WRITE
+MOV A,#'I'
+LCALL WRITE
+MOV A,#'A'
+LCALL WRITE
+MOV A,#'G'
+LCALL WRITE
+RET
 TEXT2:			;Writes 'RH = ' to Display
 MOV A,#'R'
 LCALL WRITE
 MOV A,#'H'
 LCALL WRITE
-MOV A,#' '
-LCALL WRITE
 MOV A,#'='
 LCALL WRITE
-MOV A,#' '
-LCALL WRITE
+
 RET 
 TEXT3: 
 MOV A,#' '
 LCALL WRITE
-MOV A,#' '
+MOV A,#'T'
 LCALL WRITE
-MOV A,#'O'
-LCALL WRITE
-MOV A,#'N'
+MOV A,#'='
 LCALL WRITE
 RET
  
- TEXT4:
-MOV A,#' '
-LCALL WRITE
-MOV A,#'O'
-LCALL WRITE
-MOV A,#'F'
-LCALL WRITE
-MOV A,#'F'
-LCALL WRITE
-RET
 
 LCD_INIT:		;Initializtion for the LCD
 MOV A,#38H			;Set Function SET
@@ -254,9 +273,9 @@ DELAY:			;LCD Delay
 CLR E				;Clear Enable
 CLR RS				;Clear RS
 SETB RW				;Clear R/W
-MOV P0,#0FFH			;Set P0 -> 1111 1111b
+MOV P1,#0FFH			;Set P1 -> 1111 1111b
 SETB E				;Set Enable
-MOV A,P0			;Set ACC to P0
+MOV A,P1			;Set ACC to P1
 JB ACC.7,DELAY			;Jump to Delay if ACC.7 set
 CLR E				;Clear Enable
 CLR RW				;Clear R/W
