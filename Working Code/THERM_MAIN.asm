@@ -1,3 +1,4 @@
+;*******DELAYS OFF FOR SIMULATION*******
 ;;;;;;Assign Port Names;;;;;;
 RS EQU P3.2
 RW EQU P3.1
@@ -15,8 +16,11 @@ MOV TMOD,#00100001B		;Set TMOD
 MOV TL1,#00D			;Set Timer Low Byte
 LCALL LCD_INIT			;Call LCD Init subroutine
 LCALL WELCOME			;Call Welcome Text
+LCALL DELAY2			; 2 sec Delay
+LCALL CLEARD			; Clear Display
+LCALL DIAGNOSTIC_DISPLAY	;******For Simulation******
 ;LCALL DELAY2
-LJMP	ENDP
+;LJMP	ENDP			;******For Simulation******
 
 MAIN:			;Main Routine
 MOV R1,#8D			;Set R1 -> 8D ->08H
@@ -71,8 +75,9 @@ LCALL TEXT2			; RH=
 LCALL HMDTY			; Hum reading
 LCALL TEXT3			; T= 
 LCALL TEMPERATURE		; Temp reading
-LCALL DELAY2			; 2 sec delay
-LJMP MAIN
+;LCALL DELAY2			; 2 sec delay
+;LJMP MAIN
+RET
 
 
 DELAY1:			;18ms Delay
@@ -114,6 +119,14 @@ CLR RS
 CLR RW
 SETB E
 CLR E
+;LCALL DELAY
+RET
+
+CLEARD:			;Clear the LCD
+MOV A, #01H
+LCALL SETD
+MOV A, #80H
+LCALL SETD
 ;LCALL DELAY
 RET
 
