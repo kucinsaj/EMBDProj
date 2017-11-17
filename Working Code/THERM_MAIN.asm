@@ -15,6 +15,8 @@ MOV TMOD,#00100001B		;Set TMOD
 MOV TL1,#00D			;Set Timer Low Byte
 LCALL LCD_INIT			;Call LCD Init subroutine
 LCALL WELCOME			;Call Welcome Text
+LCALL DELAY2
+
 
 MAIN:			;Main Routine
 MOV R1,#8D			;Set R1 -> 8D ->08H
@@ -262,6 +264,7 @@ MOV A,#6H			;Entry Mode Set
 LCALL SETD			;SET
 MOV A,#80H			;Set DDRAM Address
 LCALL SETD			;SET
+LCALL DELAY
 RET
 
 LINE2:			;Shifts Display to Line 2
