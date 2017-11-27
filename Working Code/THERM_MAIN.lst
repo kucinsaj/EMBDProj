@@ -1,319 +1,335 @@
 THERM_MAIN                                                                                                              PAGE 1
-                         1     ;;;;;;Assign Port Names;;;;;;
-  00B2                   2     RS EQU P3.2
-  00B1                   3     RW EQU P3.1
-  00B3                   4     E  EQU P3.3
-                         5     ;;;;;;Init Variables;;;;;;
-  0048                   6     TEMP EQU 48H
-  0049                   7     HUM  EQU 49H
-                         8     ORG 000H
-                         9     ;;;;;;INIT;;;;;;
-                        10     INIT:                   ;Program Initialization
-0000 900212             11     MOV DPTR,#VALUES                ;Move DPTR to Values LUT
-0003 D280               12     SETB P0.0                       ;Set DHT11 Data Port
-0005 C2A0               13     CLR P2.0                        ;Clear Output*
-0007 758921             14     MOV TMOD,#00100001B             ;Set TMOD
-000A 758B00             15     MOV TL1,#00D                    ;Set Timer Low Byte
-000D 1201D9             16     LCALL LCD_INIT                  ;Call LCD Init subroutine
-0010 12011C             17     LCALL WELCOME                   ;Call Welcome Text
-0013 1200B3             18     LCALL CLEARD
-0016 120068             19     LCALL DIAGNOSTIC_DISPLAY
-                        20     ;LCALL DELAY2
-0019 020210             21     LJMP    ENDP
-                        22
-                        23     MAIN:                   ;Main Routine
-001C 7908               24     MOV R1,#8D                      ;Set R1 -> 8D ->08H
-001E D280               25     SETB P0.0                       ;Set DHT11 Data Port
-0020 C280               26     CLR P0.0                        ;Clear DHT11 Data Port
-0022 12007B             27     LCALL DELAY1                    ;Delay
-0025 D280               28     SETB P0.0                       ;Set DHT11 Data Port
-0027 2080FD             29     WAIT1:JB P0.0,$                 ;Wait till Data Port LOW
-002A 3080FD             30     WAIT2:JNB P0.0,$                ;Wait till Data Port HIGH
-002D 2080FD             31     WAIT3:JB P0.0,$                 ;Wait till Data Port LOW
-                        32
-                        33     DATALOOP:               ;DHT11 Data Colection LOOP
-0030 3080FD             34     JNB P0.0,DATALOOP               ;Wait till Data Port HIGH
-0033 23                 35     RL A                            ;Rotate ACC Left
-0034 F8                 36     MOV R0,A                        ;Move ACC to Register 0
-0035 D28E               37     SETB TR1                        ;SET Timer 1 RUN
-                        38     WAIT4:
-0037 2080FD             39     JB P0.0,$                       ;Wait till Data Port LOW
-003A C28E               40     CLR TR1                         ;Stop Timer 1
-003C E58B               41     MOV A,TL1                       ;Move Timer 1 Low to ACC
-003E 9432               42     SUBB A,#50D                     ;ACC - 50D[00110010b] If carry is set, bit is low
-0040 E8                 43     MOV A,R0                        ;Move Register 0 to ACC
-0041 20D704             44     JB PSW.7, LOW                   ;Jump to LOW if Carry High
-0044 D2E0               45     SETB ACC.0                      ;Set ACC.0 to 1 -- High Bit Recieved
-0046 8002               46     SJMP DISP                       ;Jump to DISP
-                        47
-                        48     LOW:
-0048 C2E0               49     CLR ACC.0                       ;Clear ACC Bit 0 -- Low Bit Recieved
-                        50
-                        51     DISP:
-004A 758B00             52     MOV TL1,#00D                    ;Set Timer 1 Low -> 0H
-004D C2D7               53     CLR PSW.7                       ;Clear carry flag
-004F D9DF               54     DJNZ R1,DATALOOP                ;Decrement R1, and Jump to DATALOOP if not zero
-0051 20D607             55     JB PSW.6, AGAIN                 ;Jump if Decimal skip bit = 1
-0054 20D50B             56     JB PSW.5, SAVETEMP              ;If F0 is 1, Save Temp
-                        57     SAVEHUM:
-0057 F549               58     MOV HUM, A                      ;Store Accumulator Value in HUM
-0059 D2D6               59     SETB PSW.6                      ;Set Skip Decimal Data
-                        60     AGAIN:
-005B D2D5               61     SETB PSW.5                      ;Set Directing bit   0 = HUM   1 = TEMP
-005D 7908               62     MOV R1, #08D
-005F 020030             63     LJMP DATALOOP
-                        64     SAVETEMP:
-0062 F548               65     MOV TEMP, A                     ;Store Accumulator Value in TEMP
-0064 C2D5               66     CLR PSW.5                       ;Clear Directing bit   0 = HUM   1 = TEMP
-0066 C2D6               67     CLR PSW.6                       ;Clear Decimal Skip bit
-                        68
-                        69     DIAGNOSTIC_DISPLAY:     ;Displays Full Diagnostic screen with updating values
-0068 12016D             70     LCALL DIAGTEXT                  ;Title
-006B 1201F3             71     LCALL LINE2                     ;Jump to line 2
-006E 1201B9             72     LCALL TEXT2                     ; RH=
-0071 1200C9             73     LCALL HMDTY                     ; Hum reading
-0074 1201C9             74     LCALL TEXT3                     ; T=
-0077 1200F0             75     LCALL TEMPERATURE               ; Temp reading
-                        76     ;LCALL DELAY2                   ; 2 sec delay
-                        77     ;LJMP MAIN
-007A 22                 78     RET
-                        79
-                        80
-                        81     DELAY1:                 ;18ms Delay
-007B 758CB9             82     MOV TH0,#0B9H                   ;Time high set -> 185D
-007E 758AB0             83     MOV TL0,#0B0H                   ;Time low set -> 176D
-0081 D28C               84     SETB TR0                        ;Timer RUN
-0083 308DFD             85     JNB TF0,$                       ;Stay Here till TF0 set
-0086 C28C               86     CLR TR0                         ;Clear Timer RUN
-0088 C28D               87     CLR TF0                         ;Clear Timer Overflow
-008A 22                 88     RET
-                        89
-                        90     DELAY2:                 ;******Change to timer_counter
-008B 7970               91     MOV R1,#112D
-                        92     BACK:
-008D 12007B             93     LCALL DELAY1
-0090 D9FB               94     DJNZ R1,BACK
-0092 22                 95     RET
+                         1     ;*******DELAYS OFF FOR SIMULATION*******
+                         2     ;;;;;;Assign Port Names;;;;;;
+  00B2                   3     RS EQU P3.2             ;RS
+  00B1                   4     RW EQU P3.1             ;RW
+  00B3                   5     E  EQU P3.3             ;E
+                         6
+                         7     ;*****Switches********
+                         8     ; P2.5 = Inc up      *
+                         9     ; P2.6 = Dec down    *
+                        10     ; P2.7 = Enter/Setup *
+                        11     ;*********************
+                        12
+                        13     ;*****Outputs*******
+                        14     ; P2.0 = Humi Up   *
+                        15     ; P2.1 = Humi Down *
+                        16     ; P2.2 = Temp Up   *
+                        17     ; P2.3 = Temp Down *
+                        18     ;*******************
+                        19
+                        20     ;;;;;;Init Variables;;;;;;
+  0048                  21     TEMP EQU 48H
+  0049                  22     HUM  EQU 49H
+                        23     ORG 000H
+                        24     ;;;;;;INIT;;;;;;
+                        25     INIT:                   ;Program Initialization
+0000 900212             26     MOV DPTR,#VALUES                ;Move DPTR to Values LUT
+0003 D280               27     SETB P0.0                       ;Set DHT11 Data Port
+0005 C2A0               28     CLR P2.0                        ;Clear Output*
+0007 758921             29     MOV TMOD,#00100001B             ;Set TMOD
+000A 758B00             30     MOV TL1,#00D                    ;Set Timer Low Byte
+000D 1201D9             31     LCALL LCD_INIT                  ;Call LCD Init subroutine
+0010 12011C             32     LCALL WELCOME                   ;Call Welcome Text
+0013 12008B             33     LCALL DELAY2                    ; 2 sec Delay
+0016 1200B3             34     LCALL CLEARD                    ; Clear Display
+0019 120068             35     LCALL DIAGNOSTIC_DISPLAY        ;******For Simulation******
+                        36     ;LCALL DELAY2
+                        37     ;LJMP   ENDP                    ;******For Simulation******
+                        38
+                        39     MAIN:                   ;Main Routine
+001C 7908               40     MOV R1,#8D                      ;Set R1 -> 8D ->08H
+001E D280               41     SETB P0.0                       ;Set DHT11 Data Port
+0020 C280               42     CLR P0.0                        ;Clear DHT11 Data Port
+0022 12007B             43     LCALL DELAY1                    ;Delay
+0025 D280               44     SETB P0.0                       ;Set DHT11 Data Port
+0027 2080FD             45     WAIT1:JB P0.0,$                 ;Wait till Data Port LOW
+002A 3080FD             46     WAIT2:JNB P0.0,$                ;Wait till Data Port HIGH
+002D 2080FD             47     WAIT3:JB P0.0,$                 ;Wait till Data Port LOW
+                        48
+                        49     DATALOOP:               ;DHT11 Data Colection LOOP
+0030 3080FD             50     JNB P0.0,DATALOOP               ;Wait till Data Port HIGH
+0033 23                 51     RL A                            ;Rotate ACC Left
+0034 F8                 52     MOV R0,A                        ;Move ACC to Register 0
+0035 D28E               53     SETB TR1                        ;SET Timer 1 RUN
+                        54     WAIT4:
+0037 2080FD             55     JB P0.0,$                       ;Wait till Data Port LOW
+003A C28E               56     CLR TR1                         ;Stop Timer 1
+003C E58B               57     MOV A,TL1                       ;Move Timer 1 Low to ACC
+003E 9432               58     SUBB A,#50D                     ;ACC - 50D[00110010b] If carry is set, bit is low
+0040 E8                 59     MOV A,R0                        ;Move Register 0 to ACC
+0041 20D704             60     JB PSW.7, LOW                   ;Jump to LOW if Carry High
+0044 D2E0               61     SETB ACC.0                      ;Set ACC.0 to 1 -- High Bit Recieved
+0046 8002               62     SJMP DISP                       ;Jump to DISP
+                        63
+                        64     LOW:
+0048 C2E0               65     CLR ACC.0                       ;Clear ACC Bit 0 -- Low Bit Recieved
+                        66
+                        67     DISP:
+004A 758B00             68     MOV TL1,#00D                    ;Set Timer 1 Low -> 0H
+004D C2D7               69     CLR PSW.7                       ;Clear carry flag
+004F D9DF               70     DJNZ R1,DATALOOP                ;Decrement R1, and Jump to DATALOOP if not zero
+0051 20D607             71     JB PSW.6, AGAIN                 ;Jump if Decimal skip bit = 1
+0054 20D50B             72     JB PSW.5, SAVETEMP              ;If F0 is 1, Save Temp
+                        73     SAVEHUM:
+0057 F549               74     MOV HUM, A                      ;Store Accumulator Value in HUM
+0059 D2D6               75     SETB PSW.6                      ;Set Skip Decimal Data
+                        76     AGAIN:
+005B D2D5               77     SETB PSW.5                      ;Set Directing bit   0 = HUM   1 = TEMP
+005D 7908               78     MOV R1, #08D
+005F 020030             79     LJMP DATALOOP
+                        80     SAVETEMP:
+0062 F548               81     MOV TEMP, A                     ;Store Accumulator Value in TEMP
+0064 C2D5               82     CLR PSW.5                       ;Clear Directing bit   0 = HUM   1 = TEMP
+0066 C2D6               83     CLR PSW.6                       ;Clear Decimal Skip bit
+                        84
+                        85     DIAGNOSTIC_DISPLAY:     ;Displays Full Diagnostic screen with updating values
+0068 12016D             86     LCALL DIAGTEXT                  ;Title
+006B 1201F3             87     LCALL LINE2                     ;Jump to line 2
+006E 1201B9             88     LCALL TEXT2                     ; RH=
+0071 1200C9             89     LCALL HMDTY                     ; Hum reading
+0074 1201C9             90     LCALL TEXT3                     ; T=
+0077 1200F0             91     LCALL TEMPERATURE               ; Temp reading
+                        92     ;LCALL DELAY2                   ; 2 sec delay
+                        93     ;LJMP MAIN
+007A 22                 94     RET
+                        95
                         96
-                        97     CHECK:                  ;Basic value check
-0093 E8                 98     MOV A,R0
-0094 75F041             99     MOV B,#65D
-0097 95F0              100     SUBB A,B
-0099 20D707            101     JB PSW.7,NEXT1
-009C 1201C9            102     LCALL TEXT3
-009F D2A0              103     SETB P2.0
-00A1 8002              104     SJMP DISP1
+                        97     DELAY1:                 ;18ms Delay
+007B 758CB9             98     MOV TH0,#0B9H                   ;Time high set -> 185D
+007E 758AB0             99     MOV TL0,#0B0H                   ;Time low set -> 176D
+0081 D28C              100     SETB TR0                        ;Timer RUN
+0083 308DFD            101     JNB TF0,$                       ;Stay Here till TF0 set
+0086 C28C              102     CLR TR0                         ;Clear Timer RUN
+0088 C28D              103     CLR TF0                         ;Clear Timer Overflow
+008A 22                104     RET
                        105
-                       106     NEXT1:
-                       107     ;LCALL TEXT4
-00A3 C2A0              108     CLR P2.0
-                       109
-                       110     DISP1:
-00A5 C2D7              111     CLR PSW.7
-00A7 22                112     RET
-                       113
-                       114     SETD:                   ;For LCD Func
-00A8 F590              115     MOV P1,A
-00AA C2B2              116     CLR RS
-00AC C2B1              117     CLR RW
-00AE D2B3              118     SETB E
-00B0 C2B3              119     CLR E
-                       120     ;LCALL DELAY
-00B2 22                121     RET
-                       122
-                       123     CLEARD:                 ;Clear the LCD
-00B3 7401              124     MOV A, #01H
-00B5 1200A8            125     LCALL SETD
-00B8 7480              126     MOV A, #80H
-00BA 1200A8            127     LCALL SETD
-                       128     ;LCALL DELAY
-00BD 22                129     RET
-                       130
-                       131     WRITE:                  ;Writes Data to Display
-                       132
-00BE F590              133     MOV P1,A
-00C0 D2B2              134     SETB RS
-00C2 C2B1              135     CLR RW
-00C4 D2B3              136     SETB E
-00C6 C2B3              137     CLR E
-                       138     ;LCALL DELAY
-00C8 22                139     RET
-                       140
-                       141     HMDTY:                  ;Assembles Humidity reading percentage
-00C9 E549              142     MOV A,HUM                       ;Store HUM Value in ACC
-00CB 75F00A            143     MOV B,#10D                      ;Store 10D in B ACC
-00CE 84                144     DIV AB                          ;Divide ACC by B ACC
-00CF ABF0              145     MOV R3,B                        ;Store remainder in register 3
-00D1 75F00A            146     MOV B,#10D                      ;Store 10D in B ACC
-00D4 84                147     DIV AB                          ;Divide ACC by B ACC
-00D5 12020E            148     LCALL ASCII                     ;Convert to ASCII
-00D8 1200BE            149     LCALL WRITE                     ;Write to Display
-00DB E5F0              150     MOV A,B                         ;Store remainder in ACC
-00DD 12020E            151     LCALL ASCII                     ;Convert to ASCII
-00E0 1200BE            152     LCALL WRITE                     ;Write to Display
-00E3 EB                153     MOV A,R3                        ;Store register 3 in ACC
-00E4 12020E            154     LCALL ASCII                     ;Convert to ASCII
-00E7 1200BE            155     LCALL WRITE                     ;Write to Display
-00EA 7425              156     MOV A,#'%'                      ;Store Percent symbol in ACC
-00EC 1200BE            157     LCALL WRITE                     ;Write to Display
-00EF 22                158     RET
-                       159
-                       160     TEMPERATURE:            ;Assembles Temperature reading
-00F0 E548              161     MOV A,TEMP                      ;Store TEMP Value in ACC
-00F2 75F00A            162     MOV B,#10D                      ;Store 10D in B ACC
-00F5 84                163     DIV AB                          ;Divide ACC by B ACC
-00F6 ABF0              164     MOV R3,B                        ;Store remainder in register 3
-00F8 75F00A            165     MOV B,#10D                      ;Store 10D in B ACC
-00FB 84                166     DIV AB                          ;Divide ACC by B ACC
-00FC 12020E            167     LCALL ASCII                     ;Convert to ASCII
-00FF 1200BE            168     LCALL WRITE                     ;Write to Display
-0102 E5F0              169     MOV A,B                         ;Store remainder in ACC
-0104 12020E            170     LCALL ASCII                     ;Convert to ASCII
-0107 1200BE            171     LCALL WRITE                     ;Write to Display
-010A EB                172     MOV A,R3                        ;Store register 3 in ACC
-010B 12020E            173     LCALL ASCII                     ;Convert to ASCII
-010E 1200BE            174     LCALL WRITE                     ;Write to Display
-0111 74DF              175     MOV A,#11011111b                ;Store Degree symbol in ACC
-0113 1200BE            176     LCALL WRITE                     ;Write to Display
-0116 7443              177     MOV A,#'C'                      ;Store 'C' in ACC
-0118 1200BE            178     LCALL WRITE
-011B 22                179     RET
-                       180
-                       181     WELCOME:
-011C 7420              182     MOV A,#' '
-011E 1200BE            183     LCALL WRITE
-0121 7420              184     MOV A,#' '
-0123 1200BE            185     LCALL WRITE
-0126 7420              186     MOV A,#' '
-0128 1200BE            187     LCALL WRITE
-012B 7420              188     MOV A,#' '
-012D 1200BE            189     LCALL WRITE
-0130 7457              190     MOV A,#'W'
-0132 1200BE            191     LCALL WRITE
-0135 7465              192     MOV A,#'e'
-0137 1200BE            193     LCALL WRITE
-013A 746C              194     MOV A,#'l'
-013C 1200BE            195     LCALL WRITE
-013F 7463              196     MOV A,#'c'
-0141 1200BE            197     LCALL WRITE
-0144 746F              198     MOV A,#'o'
-0146 1200BE            199     LCALL WRITE
-0149 746D              200     MOV A,#'m'
-014B 1200BE            201     LCALL WRITE
-014E 7465              202     MOV A,#'e'
-0150 1200BE            203     LCALL WRITE
-0153 7420              204     MOV A,#' '
-0155 1200BE            205     LCALL WRITE
-0158 7420              206     MOV A,#' '
-015A 1200BE            207     LCALL WRITE
-015D 7420              208     MOV A,#' '
-015F 1200BE            209     LCALL WRITE
-0162 7420              210     MOV A,#' '
-0164 1200BE            211     LCALL WRITE
-0167 7420              212     MOV A,#' '
-0169 1200BE            213     LCALL WRITE
-016C 22                214     RET
-                       215
-                       216     DIAGTEXT:
-016D 7448              217     MOV A,#'H'
-016F 1200BE            218     LCALL WRITE
-0172 7455              219     MOV A,#'U'
-0174 1200BE            220     LCALL WRITE
-0177 744D              221     MOV A,#'M'
-0179 1200BE            222     LCALL WRITE
-017C 7420              223     MOV A,#' '
-017E 1200BE            224     LCALL WRITE
-0181 7426              225     MOV A,#'&'
-0183 1200BE            226     LCALL WRITE
-0186 7420              227     MOV A,#' '
-0188 1200BE            228     LCALL WRITE
-018B 7454              229     MOV A,#'T'
-018D 1200BE            230     LCALL WRITE
-0190 7445              231     MOV A,#'E'
-0192 1200BE            232     LCALL WRITE
-0195 744D              233     MOV A,#'M'
-0197 1200BE            234     LCALL WRITE
-019A 7450              235     MOV A,#'P'
-019C 1200BE            236     LCALL WRITE
-019F 7420              237     MOV A,#' '
-01A1 1200BE            238     LCALL WRITE
-01A4 7444              239     MOV A,#'D'
-01A6 1200BE            240     LCALL WRITE
-01A9 7449              241     MOV A,#'I'
-01AB 1200BE            242     LCALL WRITE
-01AE 7441              243     MOV A,#'A'
-01B0 1200BE            244     LCALL WRITE
-01B3 7447              245     MOV A,#'G'
-01B5 1200BE            246     LCALL WRITE
-01B8 22                247     RET
-                       248     TEXT2:                  ;Writes 'RH = ' to Display
-01B9 7452              249     MOV A,#'R'
-01BB 1200BE            250     LCALL WRITE
-01BE 7448              251     MOV A,#'H'
-01C0 1200BE            252     LCALL WRITE
-01C3 743D              253     MOV A,#'='
-01C5 1200BE            254     LCALL WRITE
-                       255
-01C8 22                256     RET
-                       257     TEXT3:
-01C9 7420              258     MOV A,#' '
-01CB 1200BE            259     LCALL WRITE
-01CE 7454              260     MOV A,#'T'
-01D0 1200BE            261     LCALL WRITE
-01D3 743D              262     MOV A,#'='
-01D5 1200BE            263     LCALL WRITE
-01D8 22                264     RET
-                       265
-                       266
-                       267     LCD_INIT:               ;Initializtion for the LCD
-01D9 7438              268     MOV A,#38H                      ;Set Function SET
-01DB 1200A8            269     LCALL SETD                      ;SET
-01DE 740F              270     MOV A,#0FH                      ;Set Display/Cursor Settings
-01E0 1200A8            271     LCALL SETD                      ;SET
-01E3 7401              272     MOV A,#1H                       ;Clear Display
-01E5 1200A8            273     LCALL SETD                      ;SET
-01E8 7406              274     MOV A,#6H                       ;Entry Mode Set
-01EA 1200A8            275     LCALL SETD                      ;SET
-01ED 7480              276     MOV A,#80H                      ;Set DDRAM Address
-01EF 1200A8            277     LCALL SETD                      ;SET
-                       278     ;LCALL DELAY
-01F2 22                279     RET
-                       280
-                       281     LINE2:                  ;Shifts Display to Line 2
-01F3 74C0              282     MOV A,#0C0H
-01F5 1200A8            283     LCALL SETD                      ;SET
-01F8 22                284     RET
-                       285
-                       286     DELAY:                  ;LCD Delay
-01F9 C2B3              287     CLR E                           ;Clear Enable
-01FB C2B2              288     CLR RS                          ;Clear RS
-01FD D2B1              289     SETB RW                         ;Clear R/W
-01FF 7590FF            290     MOV P1,#0FFH                    ;Set P1 -> 1111 1111b
-0202 D2B3              291     SETB E                          ;Set Enable
-0204 E590              292     MOV A,P1                        ;Set ACC to P1
-0206 20E7F0            293     JB ACC.7,DELAY                  ;Jump to Delay if ACC.7 set
-0209 C2B3              294     CLR E                           ;Clear Enable
-020B C2B1              295     CLR RW                          ;Clear R/W
-020D 22                296     RET
-                       297
-                       298     ASCII:
-020E 93                299     MOVC A,@A+DPTR
-020F 22                300     RET
-                       301     ENDP:
-0210 80FE              302     SJMP ENDP
-                       303
-                       304     VALUES:
-0212 30                305     DB  48D
-0213 31                306     DB  49D
-0214 32                307     DB  50D
-0215 33                308     DB  51D
-0216 34                309     DB  52D
-0217 35                310     DB  53D
-0218 36                311     DB  54D
-0219 37                312     DB  55D
-021A 38                313     DB  56D
-021B 39                314     DB  57D
-                       315     END
+                       106     DELAY2:                 ;******Change to timer_counter
+008B 7970              107     MOV R1,#112D
+                       108     BACK:
+008D 12007B            109     LCALL DELAY1
+0090 D9FB              110     DJNZ R1,BACK
+0092 22                111     RET
+                       112
+                       113     CHECK:                  ;Basic value check
+0093 E8                114     MOV A,R0
+0094 75F041            115     MOV B,#65D
+0097 95F0              116     SUBB A,B
+0099 20D707            117     JB PSW.7,NEXT1
+009C 1201C9            118     LCALL TEXT3
+009F D2A0              119     SETB P2.0
+00A1 8002              120     SJMP DISP1
+                       121
+                       122     NEXT1:
+                       123     ;LCALL TEXT4
+00A3 C2A0              124     CLR P2.0
+                       125
+                       126     DISP1:
+00A5 C2D7              127     CLR PSW.7
+00A7 22                128     RET
+                       129
+                       130     SETD:                   ;For LCD Func
+00A8 F590              131     MOV P1,A
+00AA C2B2              132     CLR RS
+00AC C2B1              133     CLR RW
+00AE D2B3              134     SETB E
+00B0 C2B3              135     CLR E
+                       136     ;LCALL DELAY
+00B2 22                137     RET
+                       138
+                       139     CLEARD:                 ;Clear the LCD
+00B3 7401              140     MOV A, #01H
+00B5 1200A8            141     LCALL SETD
+00B8 7480              142     MOV A, #80H
+00BA 1200A8            143     LCALL SETD
+                       144     ;LCALL DELAY
+00BD 22                145     RET
+                       146
+                       147     WRITE:                  ;Writes Data to Display
+                       148
+00BE F590              149     MOV P1,A
+00C0 D2B2              150     SETB RS
+00C2 C2B1              151     CLR RW
+00C4 D2B3              152     SETB E
+00C6 C2B3              153     CLR E
+                       154     ;LCALL DELAY
+00C8 22                155     RET
+                       156
+                       157     HMDTY:                  ;Assembles Humidity reading percentage
+00C9 E549              158     MOV A,HUM                       ;Store HUM Value in ACC
+00CB 75F00A            159     MOV B,#10D                      ;Store 10D in B ACC
+00CE 84                160     DIV AB                          ;Divide ACC by B ACC
+00CF ABF0              161     MOV R3,B                        ;Store remainder in register 3
+00D1 75F00A            162     MOV B,#10D                      ;Store 10D in B ACC
+00D4 84                163     DIV AB                          ;Divide ACC by B ACC
+00D5 12020E            164     LCALL ASCII                     ;Convert to ASCII
+00D8 1200BE            165     LCALL WRITE                     ;Write to Display
+00DB E5F0              166     MOV A,B                         ;Store remainder in ACC
+00DD 12020E            167     LCALL ASCII                     ;Convert to ASCII
+00E0 1200BE            168     LCALL WRITE                     ;Write to Display
+00E3 EB                169     MOV A,R3                        ;Store register 3 in ACC
+00E4 12020E            170     LCALL ASCII                     ;Convert to ASCII
+00E7 1200BE            171     LCALL WRITE                     ;Write to Display
+00EA 7425              172     MOV A,#'%'                      ;Store Percent symbol in ACC
+00EC 1200BE            173     LCALL WRITE                     ;Write to Display
+00EF 22                174     RET
+                       175
+                       176     TEMPERATURE:            ;Assembles Temperature reading
+00F0 E548              177     MOV A,TEMP                      ;Store TEMP Value in ACC
+00F2 75F00A            178     MOV B,#10D                      ;Store 10D in B ACC
+00F5 84                179     DIV AB                          ;Divide ACC by B ACC
+00F6 ABF0              180     MOV R3,B                        ;Store remainder in register 3
+00F8 75F00A            181     MOV B,#10D                      ;Store 10D in B ACC
+00FB 84                182     DIV AB                          ;Divide ACC by B ACC
+00FC 12020E            183     LCALL ASCII                     ;Convert to ASCII
+00FF 1200BE            184     LCALL WRITE                     ;Write to Display
+0102 E5F0              185     MOV A,B                         ;Store remainder in ACC
+0104 12020E            186     LCALL ASCII                     ;Convert to ASCII
+0107 1200BE            187     LCALL WRITE                     ;Write to Display
+010A EB                188     MOV A,R3                        ;Store register 3 in ACC
+010B 12020E            189     LCALL ASCII                     ;Convert to ASCII
+010E 1200BE            190     LCALL WRITE                     ;Write to Display
+0111 74DF              191     MOV A,#11011111b                ;Store Degree symbol in ACC
+0113 1200BE            192     LCALL WRITE                     ;Write to Display
+0116 7443              193     MOV A,#'C'                      ;Store 'C' in ACC
+0118 1200BE            194     LCALL WRITE
+011B 22                195     RET
+                       196
+                       197     WELCOME:
+011C 7420              198     MOV A,#' '
+011E 1200BE            199     LCALL WRITE
+0121 7420              200     MOV A,#' '
+0123 1200BE            201     LCALL WRITE
+0126 7420              202     MOV A,#' '
+0128 1200BE            203     LCALL WRITE
+012B 7420              204     MOV A,#' '
+012D 1200BE            205     LCALL WRITE
+0130 7457              206     MOV A,#'W'
+0132 1200BE            207     LCALL WRITE
+0135 7465              208     MOV A,#'e'
+0137 1200BE            209     LCALL WRITE
+013A 746C              210     MOV A,#'l'
+013C 1200BE            211     LCALL WRITE
+013F 7463              212     MOV A,#'c'
+0141 1200BE            213     LCALL WRITE
+0144 746F              214     MOV A,#'o'
+0146 1200BE            215     LCALL WRITE
+0149 746D              216     MOV A,#'m'
+014B 1200BE            217     LCALL WRITE
+014E 7465              218     MOV A,#'e'
+0150 1200BE            219     LCALL WRITE
+0153 7420              220     MOV A,#' '
+0155 1200BE            221     LCALL WRITE
+0158 7420              222     MOV A,#' '
+015A 1200BE            223     LCALL WRITE
+015D 7420              224     MOV A,#' '
+015F 1200BE            225     LCALL WRITE
+0162 7420              226     MOV A,#' '
+0164 1200BE            227     LCALL WRITE
+0167 7420              228     MOV A,#' '
+0169 1200BE            229     LCALL WRITE
+016C 22                230     RET
+                       231
+                       232     DIAGTEXT:
+016D 7448              233     MOV A,#'H'
+016F 1200BE            234     LCALL WRITE
+0172 7455              235     MOV A,#'U'
+0174 1200BE            236     LCALL WRITE
+0177 744D              237     MOV A,#'M'
+0179 1200BE            238     LCALL WRITE
+017C 7420              239     MOV A,#' '
+017E 1200BE            240     LCALL WRITE
+0181 7426              241     MOV A,#'&'
+0183 1200BE            242     LCALL WRITE
+0186 7420              243     MOV A,#' '
+0188 1200BE            244     LCALL WRITE
+018B 7454              245     MOV A,#'T'
+018D 1200BE            246     LCALL WRITE
+0190 7445              247     MOV A,#'E'
+0192 1200BE            248     LCALL WRITE
+0195 744D              249     MOV A,#'M'
+0197 1200BE            250     LCALL WRITE
+019A 7450              251     MOV A,#'P'
+019C 1200BE            252     LCALL WRITE
+019F 7420              253     MOV A,#' '
+01A1 1200BE            254     LCALL WRITE
+01A4 7444              255     MOV A,#'D'
+01A6 1200BE            256     LCALL WRITE
+01A9 7449              257     MOV A,#'I'
+01AB 1200BE            258     LCALL WRITE
+01AE 7441              259     MOV A,#'A'
+01B0 1200BE            260     LCALL WRITE
+01B3 7447              261     MOV A,#'G'
+01B5 1200BE            262     LCALL WRITE
+01B8 22                263     RET
+                       264     TEXT2:                  ;Writes 'RH = ' to Display
+01B9 7452              265     MOV A,#'R'
+01BB 1200BE            266     LCALL WRITE
+01BE 7448              267     MOV A,#'H'
+01C0 1200BE            268     LCALL WRITE
+01C3 743D              269     MOV A,#'='
+01C5 1200BE            270     LCALL WRITE
+                       271
+01C8 22                272     RET
+                       273     TEXT3:
+01C9 7420              274     MOV A,#' '
+01CB 1200BE            275     LCALL WRITE
+01CE 7454              276     MOV A,#'T'
+01D0 1200BE            277     LCALL WRITE
+01D3 743D              278     MOV A,#'='
+01D5 1200BE            279     LCALL WRITE
+01D8 22                280     RET
+                       281
+                       282
+                       283     LCD_INIT:               ;Initializtion for the LCD
+01D9 7438              284     MOV A,#38H                      ;Set Function SET
+01DB 1200A8            285     LCALL SETD                      ;SET
+01DE 740F              286     MOV A,#0FH                      ;Set Display/Cursor Settings
+01E0 1200A8            287     LCALL SETD                      ;SET
+01E3 7401              288     MOV A,#1H                       ;Clear Display
+01E5 1200A8            289     LCALL SETD                      ;SET
+01E8 7406              290     MOV A,#6H                       ;Entry Mode Set
+01EA 1200A8            291     LCALL SETD                      ;SET
+01ED 7480              292     MOV A,#80H                      ;Set DDRAM Address
+01EF 1200A8            293     LCALL SETD                      ;SET
+                       294     ;LCALL DELAY
+01F2 22                295     RET
+                       296
+                       297     LINE2:                  ;Shifts Display to Line 2
+01F3 74C0              298     MOV A,#0C0H
+01F5 1200A8            299     LCALL SETD                      ;SET
+01F8 22                300     RET
+                       301
+                       302     DELAY:                  ;LCD Delay
+01F9 C2B3              303     CLR E                           ;Clear Enable
+01FB C2B2              304     CLR RS                          ;Clear RS
+01FD D2B1              305     SETB RW                         ;Clear R/W
+01FF 7590FF            306     MOV P1,#0FFH                    ;Set P1 -> 1111 1111b
+0202 D2B3              307     SETB E                          ;Set Enable
+0204 E590              308     MOV A,P1                        ;Set ACC to P1
+0206 20E7F0            309     JB ACC.7,DELAY                  ;Jump to Delay if ACC.7 set
+0209 C2B3              310     CLR E                           ;Clear Enable
+020B C2B1              311     CLR RW                          ;Clear R/W
+020D 22                312     RET
+                       313
+                       314     ASCII:
+020E 93                315     MOVC A,@A+DPTR
+020F 22                316     RET
+                       317     ENDP:
+0210 80FE              318     SJMP ENDP
+                       319
+                       320     VALUES:
+0212 30                321     DB  48D
+0213 31                322     DB  49D
+0214 32                323     DB  50D
+0215 33                324     DB  51D
+0216 34                325     DB  52D
+0217 35                326     DB  53D
+0218 36                327     DB  54D
+0219 37                328     DB  55D
+021A 38                329     DB  56D
+021B 39                330     DB  57D
+                       331     END
 ASSEMBLY COMPLETE, NO ERRORS FOUND, NO WARNINGS
 
 
@@ -379,7 +395,7 @@ CY . . . . . . . . . . . . . . . . .  B  ADDR  00D7H  NOT USED
 DATALOOP . . . . . . . . . . . . . .  C  ADDR  0030H
 DELAY. . . . . . . . . . . . . . . .  C  ADDR  01F9H
 DELAY1 . . . . . . . . . . . . . . .  C  ADDR  007BH
-DELAY2 . . . . . . . . . . . . . . .  C  ADDR  008BH  NOT USED
+DELAY2 . . . . . . . . . . . . . . .  C  ADDR  008BH
 DIAGNOSTIC_DISPLAY . . . . . . . . .  C  ADDR  0068H
 DIAGTEXT . . . . . . . . . . . . . .  C  ADDR  016DH
 DISP . . . . . . . . . . . . . . . .  C  ADDR  004AH
