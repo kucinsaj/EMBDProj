@@ -1,8 +1,10 @@
 ;*******DELAYS OFF FOR SIMULATION*******
 ;;;;;;Assign Port Names;;;;;;
-RS EQU P3.2		;RS
-RW EQU P3.1		;RW
-E  EQU P3.3		;E
+RS EQU P3.6		;RS
+RW EQU P3.5		;RW
+E  EQU P3.7		;E
+
+
 
 ;*****Switches********
 ; P2.5 = Inc up      *
@@ -34,7 +36,7 @@ LCALL LCD_INIT			;Call LCD Init subroutine
 LCALL WELCOME			;Call Welcome Text
 LCALL DELAY2			; 2 sec Delay
 LCALL CLEARD			; Clear Display
-LCALL DIAGNOSTIC_DISPLAY	;******For Simulation******
+;LCALL DIAGNOSTIC_DISPLAY	;******For Simulation******
 ;LCALL DELAY2
 ;LJMP	ENDP			;******For Simulation******
 
