@@ -1,8 +1,10 @@
 ;*******DELAYS OFF FOR SIMULATION*******
 ;;;;;;Assign Port Names;;;;;;
-RS EQU P3.2		;RS
-RW EQU P3.1		;RW
-E  EQU P3.3		;E
+RS EQU P3.6		;RS
+RW EQU P3.5		;RW
+E  EQU P3.7		;E
+
+
 
 ;*****Switches********
 ; P2.5 = Inc up      *
@@ -20,6 +22,8 @@ E  EQU P3.3		;E
 ;;;;;;Init Variables;;;;;;
 TEMP EQU 48H
 HUM  EQU 49H
+TEMPSET EQU 4AH
+HUMISET EQU 4BH
 ORG 000H
 ;;;;;;INIT;;;;;;
 INIT:			;Program Initialization
@@ -32,7 +36,7 @@ LCALL LCD_INIT			;Call LCD Init subroutine
 LCALL WELCOME			;Call Welcome Text
 LCALL DELAY2			; 2 sec Delay
 LCALL CLEARD			; Clear Display
-LCALL DIAGNOSTIC_DISPLAY	;******For Simulation******
+;LCALL DIAGNOSTIC_DISPLAY	;******For Simulation******
 ;LCALL DELAY2
 ;LJMP	ENDP			;******For Simulation******
 
@@ -268,9 +272,9 @@ MOV A,#'H'
 LCALL WRITE
 MOV A,#'='
 LCALL WRITE
+RET
 
-RET 
-TEXT3: 
+TEXT3:
 MOV A,#' '
 LCALL WRITE
 MOV A,#'T'
@@ -278,8 +282,48 @@ LCALL WRITE
 MOV A,#'='
 LCALL WRITE
 RET
- 
 
+TEMPMENU:
+MOV A, TEMPSET
+TEMPTEXT:
+MOV A,#'T'
+LCALL WRITE
+MOV A,#'E'
+LCALL WRITE
+MOV A,#'M'
+LCALL WRITE
+MOV A,#'P'
+LCALL WRITE
+MOV A,#' '
+LCALL WRITE
+MOV A,#'='
+LCALL WRITE
+MOV A,#' '
+LCALL WRITE
+LCALL TEMPERATURE
+LCALL LINE2		;LINE 2
+MOV A,#'S'
+LCALL WRITE
+MOV A,#'E'
+LCALL WRITE
+MOV A,#'T'
+LCALL WRITE
+MOV A,#' '
+LCALL WRITE
+MOV A,#'T'
+LCALL WRITE
+MOV A,#'E'
+LCALL WRITE
+MOV A,#'M'
+LCALL WRITE
+MOV A,#'P'
+LCALL WRITE
+MOV A,#' '
+LCALL WRITE
+MOV A,#'='
+LCALL WRITE
+MOV A,#' '
+LCALL WRITE
 LCD_INIT:		;Initializtion for the LCD
 MOV A,#38H			;Set Function SET
 LCALL SETD			;SET
