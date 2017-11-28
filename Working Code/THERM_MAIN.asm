@@ -1,8 +1,7 @@
-;*******DELAYS OFF FOR SIMULATION*******
 ;;;;;;Assign Port Names;;;;;;
-RS EQU P3.2
-RW EQU P3.1
-E  EQU P3.3
+RS EQU P3.6
+RW EQU P3.5
+E  EQU P3.7
 ;;;;;;Init Variables;;;;;;
 TEMP EQU 48H
 HUM  EQU 49H
@@ -16,11 +15,8 @@ MOV TMOD,#00100001B		;Set TMOD
 MOV TL1,#00D			;Set Timer Low Byte
 LCALL LCD_INIT			;Call LCD Init subroutine
 LCALL WELCOME			;Call Welcome Text
-LCALL DELAY2			; 2 sec Delay
-LCALL CLEARD			; Clear Display
-LCALL DIAGNOSTIC_DISPLAY	;******For Simulation******
-;LCALL DELAY2
-;LJMP	ENDP			;******For Simulation******
+LCALL DELAY2
+LCALL CLEARD
 
 MAIN:			;Main Routine
 MOV R1,#8D			;Set R1 -> 8D ->08H
@@ -69,15 +65,15 @@ CLR PSW.5			;Clear Directing bit   0 = HUM   1 = TEMP
 CLR PSW.6			;Clear Decimal Skip bit
 
 DIAGNOSTIC_DISPLAY:	;Displays Full Diagnostic screen with updating values
+LCALL CLEARD
 LCALL DIAGTEXT			;Title
 LCALL LINE2			;Jump to line 2
 LCALL TEXT2			; RH=
 LCALL HMDTY			; Hum reading
 LCALL TEXT3			; T= 
 LCALL TEMPERATURE		; Temp reading
-;LCALL DELAY2			; 2 sec delay
-;LJMP MAIN
-RET
+LCALL DELAY2			; 2 sec delay
+LJMP MAIN
 
 
 DELAY1:			;18ms Delay
@@ -113,21 +109,22 @@ DISP1:
 CLR PSW.7
 RET
 
-SETD:			;For LCD Func
-MOV P1,A
-CLR RS
-CLR RW
-SETB E
-CLR E
-;LCALL DELAY
-RET
-
 CLEARD:			;Clear the LCD
 MOV A, #01H
 LCALL SETD
 MOV A, #80H
 LCALL SETD
-;LCALL DELAY
+LCALL DELAY
+RET
+
+SETD:			;For LCD Func
+MOV P1,A
+CLR RS
+CLR RW
+SETB E
+NOP
+CLR E
+LCALL DELAY
 RET
 
 WRITE:			;Writes Data to Display
@@ -137,7 +134,7 @@ SETB RS
 CLR RW
 SETB E
 CLR E
-;LCALL DELAY
+LCALL DELAY
 RET
 
 HMDTY:			;Assembles Humidity reading percentage
@@ -211,8 +208,6 @@ MOV A,#' '
 LCALL WRITE
 MOV A,#' '
 LCALL WRITE
-MOV A,#' '
-LCALL WRITE
 RET
 
 DIAGTEXT:
@@ -277,11 +272,10 @@ MOV A,#6H			;Entry Mode Set
 LCALL SETD			;SET
 MOV A,#80H			;Set DDRAM Address
 LCALL SETD			;SET
-;LCALL DELAY
 RET
 
 LINE2:			;Shifts Display to Line 2
-MOV A,#0C0H
+MOV A,#014H
 LCALL SETD			;SET
 RET
 
@@ -314,4 +308,10 @@ DB  54D
 DB  55D
 DB  56D
 DB  57D
-END
+
+
+
+
+
+
+.end
