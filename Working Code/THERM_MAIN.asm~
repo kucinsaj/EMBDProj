@@ -1,8 +1,22 @@
 ;*******DELAYS OFF FOR SIMULATION*******
 ;;;;;;Assign Port Names;;;;;;
-RS EQU P3.2
-RW EQU P3.1
-E  EQU P3.3
+RS EQU P3.2		;RS
+RW EQU P3.1		;RW
+E  EQU P3.3		;E
+
+;*****Switches********
+; P2.5 = Inc up      *
+; P2.6 = Dec down    *
+; P2.7 = Enter/Setup *
+;*********************
+
+;*****Outputs*******
+; P2.0 = Humi Up   *
+; P2.1 = Humi Down *
+; P2.2 = Temp Up   *
+; P2.3 = Temp Down *
+;*******************
+
 ;;;;;;Init Variables;;;;;;
 TEMP EQU 48H
 HUM  EQU 49H
